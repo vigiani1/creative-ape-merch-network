@@ -25,7 +25,10 @@ export default async function PortalMediaPage() {
       <MediaLibraryEditor
         allowMaster={false}
         organizations={(organizations ?? []).map((org) => ({ id: org.id, name: org.name, number: Number(org.organization_number) }))}
-        assets={assets ?? []}
+        assets={(assets ?? []).map((asset) => ({
+          ...asset,
+          publicUrl: supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
+        }))}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireSuperAdmin } from "@/lib/auth";
 
@@ -88,4 +89,5 @@ export async function saveProductEditorV2(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${input.productId}`);
+  redirect(`/admin/products/${input.productId}?saved=1`);
 }

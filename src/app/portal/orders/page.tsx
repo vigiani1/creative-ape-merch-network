@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOrganizationMembership } from "@/lib/auth";
 
 function money(cents: number) {
@@ -40,7 +41,7 @@ export default async function PortalOrdersPage() {
           <tbody>
             {(orders ?? []).map((order) => (
               <tr key={order.id} className="border-b border-black/5 last:border-0">
-                <td className="py-4 pr-4 font-bold">{order.order_number}</td>
+                <td className="py-4 pr-4 font-bold"><Link href={`/portal/orders/${order.id}`} className="underline">{order.order_number}</Link></td>
                 <td className="py-4 pr-4">{order.customer_name || "Guest"}</td>
                 <td className="py-4 pr-4"><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{order.payment_status}</span></td>
                 <td className="py-4 pr-4"><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{order.fulfillment_status}</span></td>

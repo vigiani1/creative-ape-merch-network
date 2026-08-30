@@ -3,6 +3,15 @@
 import { useMemo, useState } from "react";
 import { saveProductEditorV2 } from "@/app/admin/products/[id]/actions-v2";
 
+type InventoryItem = {
+  id?: string;
+  size?: string | null;
+  color?: string | null;
+  quantity?: number | null;
+  sku?: string | null;
+  priceOverrideCents?: number | null;
+};
+
 type Editor = {
   product: {
     id: string;
@@ -18,14 +27,8 @@ type Editor = {
   };
   sizes?: Array<{ name: string; active: boolean; displayOrder: number }>;
   colors?: Array<{ name: string; active: boolean; imageUrl?: string | null; displayOrder: number }>;
-  inventory?: Array<{
-    id?: string;
-    size?: string | null;
-    color?: string | null;
-    quantity?: number | null;
-    sku?: string | null;
-    priceOverrideCents?: number | null;
-  }>;
+  inventory?: InventoryItem[];
+  media?: unknown[];
   stores?: Array<{ id: string; name: string; isPrimary?: boolean }>;
   collections?: Array<{ id: string; name: string }>;
 };
@@ -55,7 +58,7 @@ export function ProductEditorForm({ editor, setup }: { editor: Editor; setup: Se
   );
 
   const existingInventory = useMemo(() => {
-    const map = new Map<string, Editor["inventory"][number]>();
+    const map = new Map<string, InventoryItem>();
     for (const item of editor.inventory ?? []) {
       map.set(`${item.size ?? ""}::${item.color ?? ""}`, item);
     }

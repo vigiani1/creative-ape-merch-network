@@ -42,9 +42,7 @@ export function MediaLibraryEditor({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return assets.filter((asset) => {
-      const inScope = scope === "master"
-        ? asset.scope === "master"
-        : asset.organization_id === organizationId;
+      const inScope = scope === "master" ? asset.scope === "master" : asset.organization_id === organizationId;
       if (!inScope) return false;
       if (!q) return true;
       return [asset.title, asset.file_name, asset.alt_text, ...(asset.tags ?? [])]
@@ -74,6 +72,7 @@ export function MediaLibraryEditor({
       cacheControl: "3600",
       upsert: false,
     });
+
     if (uploadError) {
       setBusy(false);
       setMessage(uploadError.message);
@@ -116,68 +115,86 @@ export function MediaLibraryEditor({
   }
 
   return (
-    <div className="grid gap-5">
-      <div className="grid gap-3 rounded-2xl border border-black/10 bg-white p-5 md:grid-cols-[1fr_1fr_1.5fr_auto]">
+    <div className="admin-media-library">
+      <section className="admin-media-toolbar">
         {allowMaster ? (
-          <label className="grid gap-2 text-sm font-semibold">Library
-            <select value={scope} onChange={(event) => setScope(event.target.value as "master" | "organization")} className="rounded-xl border border-black/15 px-4 py-3 font-normal">
+          <label className="admin-field">
+            <span>Library</span>
+            <select value={scope} onChange={(event) => setScope(event.target.value as "master" | "organization")}>
               <option value="master">Creative Ape master</option>
               <option value="organization">Organization</option>
             </select>
           </label>
-        ) : <div />}
+        ) : null}
 
-        <label className="grid gap-2 text-sm font-semibold">Organization
-          <select disabled={scope === "master"} value={organizationId} onChange={(event) => setOrganizationId(event.target.value)} className="rounded-xl border border-black/15 px-4 py-3 font-normal disabled:bg-neutral-100">
-            {organizations.map((org) => <option key={org.id} value={org.id}>{org.number ? `CA-${String(org.number).padStart(6,"0")} · ` : ""}{org.name}</option>)}
+        <label className="admin-field">
+          <span>Organization</span>
+          <select disabled={scope === "master"} value={organizationId} onChange={(event) => setOrganizationId(event.target.value)}>
+            {organizations.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.number ? `CA-${String(org.number).padStart(6,"0")} · ` : ""}{org.name}
+              </option>
+            ))}
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold">Search media
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, alt text, tag..." className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+        <label className="admin-field admin-field--wide">
+          <span>Search media</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, alt text, tag..." />
         </label>
 
-        <label className="self-end cursor-pointer rounded-xl bg-black px-5 py-3 text-center text-sm font-bold text-white">
-          {busy ? "Working..." : "Upload media"}
+        <label className="admin-upload-button">
+          {busy ? "Working…" : "Upload Media"}
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/webm,application/pdf"
             disabled={busy}
-            className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) void upload(file);
             }}
           />
         </label>
-      </div>
+      </section>
 
-      {message ? <p className="text-sm text-black/55">{message}</p> : null}
+      {message ? <p className="admin-media-message">{message}</p> : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="admin-media-grid">
         {filtered.map((asset) => {
           const url = publicUrl(asset.storage_path);
           return (
-            <article key={asset.id} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
-              <div className="aspect-square bg-neutral-100">
-                {asset.media_type === "video" ? <video src={url} controls className="h-full w-full object-cover" /> :
-                  asset.media_type === "image" ? <img src={url} alt={asset.alt_text ?? ""} className="h-full w-full object-cover" /> :
-                  <div className="flex h-full items-center justify-center p-4 text-center text-sm font-bold">File<br />{asset.file_name}</div>}
+            <article key={asset.id} className="admin-media-card">
+              <div className="admin-media-card__preview">
+                {asset.media_type === "video" ? (
+                  <video src={url} controls />
+                ) : asset.media_type === "image" ? (
+                  <img src={url} alt={asset.alt_text ?? ""} />
+                ) : (
+                  <div className="admin-media-card__file">{asset.file_name}</div>
+                )}
+                <span>{asset.media_type}</span>
               </div>
-              <div className="grid gap-2 p-4 text-sm">
-                <p className="font-black">{asset.title || asset.file_name}</p>
-                <p className="break-all text-xs text-black/40">{asset.storage_path}</p>
-                <div className="flex gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => navigator.clipboard.writeText(url)} className="underline">Copy URL</button>
-                  <button type="button" disabled={busy} onClick={() => void remove(asset)} className="underline">Remove</button>
+              <div className="admin-media-card__body">
+                <div>
+                  <h3>{asset.title || asset.file_name}</h3>
+                  <p>{asset.file_name}</p>
+                </div>
+                <div className="admin-media-card__actions">
+                  <button type="button" onClick={() => navigator.clipboard.writeText(url)}>Copy URL</button>
+                  <button type="button" disabled={busy} onClick={() => void remove(asset)}>Remove</button>
                 </div>
               </div>
             </article>
           );
         })}
-      </div>
+      </section>
 
-      {!filtered.length ? <div className="rounded-2xl border border-dashed border-black/15 bg-white p-10 text-center text-sm text-black/45">No media matches this library/filter yet.</div> : null}
+      {!filtered.length ? (
+        <div className="admin-empty admin-empty--large">
+          <h3>No media found.</h3>
+          <p>Upload an asset or adjust the library filter.</p>
+        </div>
+      ) : null}
     </div>
   );
 }

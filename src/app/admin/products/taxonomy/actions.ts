@@ -31,7 +31,7 @@ export async function saveCategory(formData: FormData) {
   const colors=input.defaultColors.split(",").map((v)=>v.trim()).filter(Boolean);
 
   const { error } = await supabase.rpc("save_product_category_v2", {
-    target_category_id: input.id,
+    category_id_input: input.id,
     category_name: input.name,
     category_description: input.description,
     uses_size_input: input.usesSize,
@@ -69,7 +69,7 @@ export async function saveCollection(formData: FormData) {
   });
 
   const { error }=await supabase.rpc("save_admin_collection_v2",{
-    target_collection_id:input.id,
+    collection_id_input:input.id,
     target_organization_id:input.organizationId,
     collection_name:input.name,
     collection_description:input.description,

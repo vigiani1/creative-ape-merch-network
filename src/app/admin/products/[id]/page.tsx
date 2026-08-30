@@ -11,10 +11,10 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: product, error }, { data: variants, error: variantsError }] = await Promise.all([
+  const [{ data: product, error }, { data: variants, error: variantsError }, { data: vendors, error: vendorsError }] = await Promise.all([
     supabase
       .from("products")
-      .select("id,name,slug,description,sku,category,status,retail_price,production_cost,default_revenue_share_rate,featured,stores(slug)")
+      .select("id,name,slug,description,sku,category,status,retail_price,production_cost,default_revenue_share_rate,featured,vendor_id,vendor_part_number,stores(slug)")
       .eq("id", id)
       .maybeSingle(),
     supabase
@@ -22,9 +22,10 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
       .select("id,size,color,sku,price_override,production_cost_override,inventory_quantity,availability_status")
       .eq("product_id", id)
       .order("created_at", { ascending: true }),
+    supabase.from("vendors").select("id,name").eq("active", true).order("name"),
   ]);
 
-  if (error || variantsError || !product) notFound();
+  if (error || variantsError || vendorsError || !product) notFound();
 
   return (
     <div className="mx-auto grid max-w-5xl gap-6">
@@ -49,6 +50,17 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
 
           <label className="grid gap-2 text-sm font-semibold">Category
             <input name="category" defaultValue={product.category ?? ""} maxLength={80} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold">Vendor
+            <select name="vendorId" defaultValue={product.vendor_id ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal">
+              <option value="">No vendor</option>
+              {(vendors ?? []).map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold">Vendor part number
+            <input name="vendorPartNumber" defaultValue={product.vendor_part_number ?? ""} maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
           </label>
         </div>
 

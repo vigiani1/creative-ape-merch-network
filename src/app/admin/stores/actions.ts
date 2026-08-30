@@ -146,6 +146,12 @@ const SectionInput = z.object({
   imageUrl: z.string().trim().max(1000).optional(),
   linkUrl: z.string().trim().max(1000).optional(),
   videoUrl: z.string().trim().max(1000).optional(),
+  buttonLabel: z.string().trim().max(80).optional(),
+  buttonUrl: z.string().trim().max(1000).optional(),
+  buttonShape: z.enum(["rounded","pill","square"]).optional(),
+  align: z.enum(["left","center","right"]).optional(),
+  featuredCount: z.union([z.literal(""), z.coerce.number().int().min(1).max(24)]),
+  minHeight: z.union([z.literal(""), z.coerce.number().int().min(120).max(1200)]),
   items: z.string().trim().max(5000).optional(),
 });
 
@@ -156,6 +162,12 @@ function sectionSettings(input: z.infer<typeof SectionInput>) {
     image_url: input.imageUrl || null,
     link_url: input.linkUrl || null,
     video_url: input.videoUrl || null,
+    button_label: input.buttonLabel || null,
+    button_url: input.buttonUrl || null,
+    button_shape: input.buttonShape || "rounded",
+    align: input.align || "left",
+    featured_count: input.featuredCount === "" ? null : input.featuredCount,
+    min_height: input.minHeight === "" ? null : input.minHeight,
     items: input.items
       ? input.items.split("\n").map((item) => item.trim()).filter(Boolean)
       : [],
@@ -185,6 +197,12 @@ export async function createStoreSection(formData: FormData) {
     imageUrl: String(formData.get("imageUrl") ?? "") || undefined,
     linkUrl: String(formData.get("linkUrl") ?? "") || undefined,
     videoUrl: String(formData.get("videoUrl") ?? "") || undefined,
+    buttonLabel: String(formData.get("buttonLabel") ?? "") || undefined,
+    buttonUrl: String(formData.get("buttonUrl") ?? "") || undefined,
+    buttonShape: String(formData.get("buttonShape") ?? "") || undefined,
+    align: String(formData.get("align") ?? "") || undefined,
+    featuredCount: String(formData.get("featuredCount") ?? ""),
+    minHeight: String(formData.get("minHeight") ?? ""),
     items: String(formData.get("items") ?? "") || undefined,
   });
 
@@ -217,6 +235,12 @@ export async function updateStoreSection(formData: FormData) {
     imageUrl: String(formData.get("imageUrl") ?? "") || undefined,
     linkUrl: String(formData.get("linkUrl") ?? "") || undefined,
     videoUrl: String(formData.get("videoUrl") ?? "") || undefined,
+    buttonLabel: String(formData.get("buttonLabel") ?? "") || undefined,
+    buttonUrl: String(formData.get("buttonUrl") ?? "") || undefined,
+    buttonShape: String(formData.get("buttonShape") ?? "") || undefined,
+    align: String(formData.get("align") ?? "") || undefined,
+    featuredCount: String(formData.get("featuredCount") ?? ""),
+    minHeight: String(formData.get("minHeight") ?? ""),
     items: String(formData.get("items") ?? "") || undefined,
   });
 

@@ -16,6 +16,7 @@ const Input = z.object({
   status: z.enum(["draft","published"]),
   featured: z.boolean(),
   colorsJson: z.string(),
+  productImageAssetId: z.string().uuid().optional(),
 });
 
 function dollarsToCents(value: number) {
@@ -36,6 +37,7 @@ export async function createMerchandisingProduct(formData: FormData) {
     status: formData.get("status"),
     featured: formData.get("featured") === "on",
     colorsJson: String(formData.get("colorsJson") ?? "[]"),
+    productImageAssetId: String(formData.get("productImageAssetId") ?? "") || undefined,
   });
 
   const sizes = formData.getAll("sizes").map(String).filter(Boolean);
@@ -100,7 +102,20 @@ export async function createMerchandisingProduct(formData: FormData) {
 
   if (saveError) throw new Error(saveError.message || "Unable to save product merchandising.");
 
+  if (input.productImageAssetId) {
+    const { error: mediaError } = await supabase.rpc("save_admin_product_media_v2", {
+      target_product_id: productId,
+      media_items: [{
+        mediaAssetId: input.productImageAssetId,
+        isPrimary: true,
+        displayOrder: 0,
+        altText: input.name,
+      }],
+    });
+    if (mediaError) throw new Error(mediaError.message || "Product was created, but the image could not be attached.");
+  }
+
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}`);
-  redirect(`/admin/products/${productId}`);
+  redirect(`/admin/products/${productId}?created=1`);
 }

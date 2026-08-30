@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireSuperAdmin } from "@/lib/auth";
-import { updateDomainStatus } from "./actions";
+import { saveShippingSettings, updateDomainStatus } from "./actions";
 
 type DomainRequest = {
   id:string;
@@ -23,6 +23,37 @@ type PayoutRow = {
   verifiedAt?:string|null;
 };
 
+type ShippingSettings = {
+  provider?: string;
+  hasApiKey?: boolean;
+  connectionStatus?: string;
+  origin?: {
+    name?: string|null;
+    company?: string|null;
+    phone?: string|null;
+    email?: string|null;
+    address1?: string|null;
+    address2?: string|null;
+    city?: string|null;
+    state?: string|null;
+    postalCode?: string|null;
+    country?: string|null;
+  };
+  package?: {
+    name?: string|null;
+    length?: number|null;
+    width?: number|null;
+    height?: number|null;
+    weightOz?: number|null;
+  };
+  rules?: {
+    freeShippingThresholdCents?: number|null;
+    handlingFeeCents?: number|null;
+    fallbackRateCents?: number|null;
+    allowedServices?: string[];
+  };
+};
+
 export default async function SettingsPage() {
   const { supabase } = await requireSuperAdmin();
 
@@ -32,18 +63,22 @@ export default async function SettingsPage() {
     { count: productCount },
     { data: domainData, error: domainError },
     { data: payoutData, error: payoutError },
+    { data: shippingData, error: shippingError },
   ] = await Promise.all([
     supabase.from("organizations").select("*",{count:"exact",head:true}).neq("status","archived"),
     supabase.from("stores").select("*",{count:"exact",head:true}).neq("status","archived"),
     supabase.from("products").select("*",{count:"exact",head:true}).neq("status","archived"),
     supabase.rpc("get_super_admin_domain_requests_v1"),
     supabase.rpc("get_super_admin_payout_settings_v1"),
+    supabase.rpc("get_super_admin_shipping_settings_v1"),
   ]);
 
-  if (domainError || payoutError) throw new Error("Unable to load Admin Settings.");
+  if (domainError || payoutError || shippingError) throw new Error("Unable to load Admin Settings.");
 
   const domains=(domainData ?? []) as DomainRequest[];
   const payouts=(payoutData ?? []) as PayoutRow[];
+  const shipping=(shippingData ?? {}) as ShippingSettings;
+  const allowedServices=new Set(shipping.rules?.allowedServices ?? []);
 
   return (
     <div className="admin-page">
@@ -133,6 +168,138 @@ export default async function SettingsPage() {
         </div>
       </section>
 
+      <section className="admin-settings-detail">
+        <div className="admin-settings-detail__head">
+          <div>
+            <p className="admin-kicker">Shipping</p>
+            <h3>Shipping Provider</h3>
+            <p>Creative Ape controls carrier credentials, origin, package defaults, and checkout shipping rules.</p>
+          </div>
+          <div className="admin-payout-summary">
+            <strong>{shipping.provider ? shipping.provider.toUpperCase() : "Not configured"}</strong>
+            <span className={`admin-status admin-status--${shipping.connectionStatus || "not_configured"}`}>
+              {shipping.connectionStatus || "not configured"}
+            </span>
+          </div>
+        </div>
+
+        <form action={saveShippingSettings} className="admin-shipping-form">
+          <section className="admin-shipping-block">
+            <div className="admin-shipping-block__head">
+              <span>01</span>
+              <div>
+                <h4>Provider Connection</h4>
+                <p>The API key is encrypted in Supabase Vault and is never displayed back after saving.</p>
+              </div>
+            </div>
+            <div className="admin-editor-fields admin-editor-fields--two">
+              <label className="admin-field">
+                <span>Shipping provider</span>
+                <select name="provider" defaultValue={shipping.provider || "manual"}>
+                  <option value="manual">Manual / fallback rates</option>
+                  <option value="shippo">Shippo</option>
+                  <option value="easypost">EasyPost</option>
+                  <option value="shipengine">ShipEngine</option>
+                </select>
+              </label>
+              <label className="admin-field">
+                <span>API key {shipping.hasApiKey ? <em>Saved securely</em> : null}</span>
+                <input
+                  name="apiKey"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={shipping.hasApiKey ? "Leave blank to keep current key" : "Enter provider API key"}
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className="admin-shipping-block">
+            <div className="admin-shipping-block__head">
+              <span>02</span>
+              <div>
+                <h4>Shipping Origin</h4>
+                <p>The return-from address used to calculate live carrier rates and labels.</p>
+              </div>
+            </div>
+            <div className="admin-editor-fields admin-editor-fields--two">
+              <label className="admin-field"><span>Contact name</span><input name="originName" defaultValue={shipping.origin?.name || ""} /></label>
+              <label className="admin-field"><span>Company</span><input name="originCompany" defaultValue={shipping.origin?.company || ""} /></label>
+              <label className="admin-field"><span>Phone</span><input name="originPhone" type="tel" defaultValue={shipping.origin?.phone || ""} /></label>
+              <label className="admin-field"><span>Email</span><input name="originEmail" type="email" defaultValue={shipping.origin?.email || ""} /></label>
+              <label className="admin-field admin-field--wide"><span>Address</span><input name="originAddress1" defaultValue={shipping.origin?.address1 || ""} /></label>
+              <label className="admin-field admin-field--wide"><span>Address line 2</span><input name="originAddress2" defaultValue={shipping.origin?.address2 || ""} /></label>
+              <label className="admin-field"><span>City</span><input name="originCity" defaultValue={shipping.origin?.city || ""} /></label>
+              <label className="admin-field"><span>State</span><input name="originState" defaultValue={shipping.origin?.state || ""} /></label>
+              <label className="admin-field"><span>ZIP code</span><input name="originPostalCode" defaultValue={shipping.origin?.postalCode || ""} /></label>
+              <label className="admin-field"><span>Country</span><input name="originCountry" defaultValue={shipping.origin?.country || "US"} /></label>
+            </div>
+          </section>
+
+          <section className="admin-shipping-block">
+            <div className="admin-shipping-block__head">
+              <span>03</span>
+              <div>
+                <h4>Default Package</h4>
+                <p>Fallback parcel dimensions for apparel orders when a product-specific package is not defined.</p>
+              </div>
+            </div>
+            <div className="admin-editor-fields admin-editor-fields--five">
+              <label className="admin-field admin-field--wide"><span>Package name</span><input name="packageName" defaultValue={shipping.package?.name || "Apparel Mailer"} /></label>
+              <label className="admin-field"><span>Length (in)</span><input name="packageLength" type="number" min="0.01" step="0.01" defaultValue={shipping.package?.length ?? 12} /></label>
+              <label className="admin-field"><span>Width (in)</span><input name="packageWidth" type="number" min="0.01" step="0.01" defaultValue={shipping.package?.width ?? 10} /></label>
+              <label className="admin-field"><span>Height (in)</span><input name="packageHeight" type="number" min="0.01" step="0.01" defaultValue={shipping.package?.height ?? 2} /></label>
+              <label className="admin-field"><span>Weight (oz)</span><input name="packageWeightOz" type="number" min="0.01" step="0.01" defaultValue={shipping.package?.weightOz ?? 8} /></label>
+            </div>
+          </section>
+
+          <section className="admin-shipping-block">
+            <div className="admin-shipping-block__head">
+              <span>04</span>
+              <div>
+                <h4>Checkout Rules</h4>
+                <p>Control free shipping, handling, fallback pricing, and which carrier services customers may choose.</p>
+              </div>
+            </div>
+            <div className="admin-editor-fields admin-editor-fields--three">
+              <label className="admin-field">
+                <span>Free shipping over</span>
+                <div className="admin-money-input"><b>$</b><input name="freeShippingThreshold" type="number" min="0" step="0.01" defaultValue={shipping.rules?.freeShippingThresholdCents == null ? "" : (shipping.rules.freeShippingThresholdCents/100).toFixed(2)} placeholder="75.00" /></div>
+              </label>
+              <label className="admin-field">
+                <span>Handling fee</span>
+                <div className="admin-money-input"><b>$</b><input name="handlingFee" type="number" min="0" step="0.01" defaultValue={((shipping.rules?.handlingFeeCents ?? 0)/100).toFixed(2)} /></div>
+              </label>
+              <label className="admin-field">
+                <span>Fallback shipping rate</span>
+                <div className="admin-money-input"><b>$</b><input name="fallbackRate" type="number" min="0" step="0.01" defaultValue={((shipping.rules?.fallbackRateCents ?? 895)/100).toFixed(2)} /></div>
+              </label>
+            </div>
+
+            <div className="admin-shipping-services">
+              <p>Allowed services</p>
+              {[
+                ["usps_ground_advantage","USPS Ground Advantage"],
+                ["usps_priority","USPS Priority Mail"],
+                ["ups_ground","UPS Ground"],
+                ["ups_2day","UPS 2nd Day Air"],
+                ["fedex_ground","FedEx Ground"],
+              ].map(([value,label])=>(
+                <label key={value}>
+                  <input type="checkbox" name="allowedServices" value={value} defaultChecked={allowedServices.has(value)} />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <div className="admin-editor-savebar">
+            <span className="admin-muted">Provider secrets are never returned to the browser after save.</span>
+            <button type="submit">Save Shipping Settings</button>
+          </div>
+        </form>
+      </section>
+
       <section className="admin-settings-grid">
         <article className="admin-settings-card">
           <p className="admin-kicker">Catalog</p>
@@ -157,9 +324,9 @@ export default async function SettingsPage() {
 
         <article className="admin-settings-card">
           <p className="admin-kicker">Shipping</p>
-          <h3>Shipping provider</h3>
-          <p>Carrier API credentials, origin address, packaging, live rates, and label generation will live here next.</p>
-          <span className="admin-muted">Next implementation phase</span>
+          <h3>Checkout shipping</h3>
+          <p>The provider connection and shipping rules above now define the policy that checkout will consume.</p>
+          <span className="admin-muted">Live rate + label execution is the next carrier-integration layer.</span>
         </article>
       </section>
 

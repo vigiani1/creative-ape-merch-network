@@ -61,9 +61,9 @@ export default async function CatalogPage({
     supabase.rpc("get_public_storefront_home_render_v5", { target_store_slug: slug }),
     supabase.rpc("get_public_storefront_catalog_v3", {
       target_store_slug: slug,
-      category_slug_filter: category,
-      search_query: search || null,
-      availability_filter: availability,
+      category_slug_filter: category ?? undefined,
+      search_query: search || undefined,
+      availability_filter: availability ?? undefined,
       sort_key: sort,
       result_limit: 120,
       result_offset: 0,

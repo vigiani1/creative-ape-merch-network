@@ -3,6 +3,12 @@ import { requireSuperAdmin } from "@/lib/auth";
 
 type Search = { q?: string; category?: string; organization?: string };
 
+
+function metadataVariants(value: unknown): unknown[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  const variants = (value as Record<string, unknown>).variants;
+  return Array.isArray(variants) ? variants : [];
+}
 export default async function AdminProductLibraryPage({ searchParams }: { searchParams: Promise<Search> }) {
   const params = await searchParams;
   const q = (params.q ?? "").trim().toLowerCase();
@@ -93,7 +99,7 @@ export default async function AdminProductLibraryPage({ searchParams }: { search
                   {(rows ?? []).map((item) => {
                     const vendor = Array.isArray(item.vendors) ? item.vendors[0] : item.vendors;
                     const store = Array.isArray(item.stores) ? item.stores[0] : item.stores;
-                    const variantCount = Array.isArray((item.search_metadata as any)?.variants) ? (item.search_metadata as any).variants.length : 0;
+                    const variantCount = metadataVariants(item.search_metadata).length;
                     return (
                       <article key={item.id} className="rounded-xl border border-black/10 p-4">
                         <div className="flex items-start justify-between gap-3">

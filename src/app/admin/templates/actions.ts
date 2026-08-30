@@ -187,6 +187,7 @@ const CloneTemplate = z.object({
   revenueShareRate: z.union([z.literal(""), z.coerce.number().min(0).max(100)]),
   status: z.enum(["draft","published"]),
   featured: z.boolean(),
+  qtyAvailable: z.coerce.number().int().min(0).max(1000000),
 });
 
 export async function cloneTemplateToStore(formData: FormData) {
@@ -200,10 +201,11 @@ export async function cloneTemplateToStore(formData: FormData) {
     revenueShareRate: String(formData.get("revenueShareRate") ?? ""),
     status: formData.get("status"),
     featured: formData.get("featured") === "on",
+    qtyAvailable: formData.get("qtyAvailable") ?? 0,
   });
 
   const [{ data: template, error: templateError }, { data: store, error: storeError }] = await Promise.all([
-    supabase.from("product_templates").select("id,sku_prefix,description,category,base_production_cost,finished_sale_price,vendor_id,vendor_part_number").eq("id", input.templateId).single(),
+    supabase.from("product_templates").select("id,sku_prefix,description,category,base_production_cost,finished_sale_price,vendor_id,vendor_part_number,primary_image_url,gallery_urls").eq("id", input.templateId).single(),
     supabase.from("stores").select("id,organization_id,slug").eq("id", input.storeId).single(),
   ]);
   if (templateError || !template) throw new Error("Template not found.");
@@ -226,14 +228,40 @@ export async function cloneTemplateToStore(formData: FormData) {
     vendor_id: template.vendor_id,
     vendor_part_number: template.vendor_part_number,
     custom_overrides: {},
+    inventory_quantity: input.qtyAvailable,
   }).select("id").single();
 
   if (productError || !product) throw new Error(productError?.code === "23505" ? "That product slug is already used in this store." : "Unable to clone template.");
 
-  const { data: templateVariants, error: variantsError } = await supabase.from("product_template_variants")
-    .select("variant_group,size,color,sku_suffix,vendor_part_number,price_override,production_cost_override,availability_status,show_on_card,weight_oz,length_in,width_in,height_in,packaging_class,stackable,compressible,ships_alone")
-    .eq("product_template_id", template.id).order("created_at");
-  if (variantsError) throw new Error("Product was created, but template variants could not be loaded.");
+  const [
+    { data: templateVariants, error: variantsError },
+    { data: templateColors, error: colorsError },
+  ] = await Promise.all([
+    supabase.from("product_template_variants")
+      .select("variant_group,size,color,sku_suffix,vendor_part_number,price_override,production_cost_override,availability_status,show_on_card,weight_oz,length_in,width_in,height_in,packaging_class,stackable,compressible,ships_alone")
+      .eq("product_template_id", template.id).order("created_at"),
+    supabase.from("product_template_color_options")
+      .select("color_name,image_url,display_order,active")
+      .eq("product_template_id", template.id)
+      .eq("active", true)
+      .order("display_order"),
+  ]);
+  if (variantsError || colorsError) throw new Error("Product was created, but saved product options could not be loaded.");
+
+  if (templateColors?.length) {
+    const { error } = await supabase.from("product_color_options").insert(templateColors.map((color) => ({
+      organization_id: store.organization_id,
+      product_id: product.id,
+      color_name: color.color_name,
+      image_url: color.image_url,
+      display_order: color.display_order,
+      active: color.active,
+    })));
+    if (error) {
+      await supabase.from("products").delete().eq("id", product.id);
+      throw new Error("Unable to copy saved product colors.");
+    }
+  }
 
   if (templateVariants?.length) {
     const { error } = await supabase.from("product_variants").insert(templateVariants.map((variant) => ({
@@ -257,12 +285,37 @@ export async function cloneTemplateToStore(formData: FormData) {
       stackable: variant.stackable,
       compressible: variant.compressible,
       ships_alone: variant.ships_alone,
+      managed_by_option_editor: true,
     })));
     if (error) {
       await supabase.from("products").delete().eq("id", product.id);
       throw new Error("Unable to clone template variants.");
     }
   }
+
+  const mediaRows = [
+    ...(template.primary_image_url ? [{
+      organization_id: store.organization_id,
+      product_id: product.id,
+      media_type: "image",
+      external_url: template.primary_image_url,
+      display_order: 0,
+      is_primary: true,
+      alt_text: input.name,
+    }] : []),
+    ...((template.gallery_urls ?? [])
+      .filter((url) => url !== template.primary_image_url)
+      .map((url, index) => ({
+        organization_id: store.organization_id,
+        product_id: product.id,
+        media_type: "image",
+        external_url: url,
+        display_order: index + 1,
+        is_primary: false,
+        alt_text: input.name,
+      }))),
+  ];
+  if (mediaRows.length) await supabase.from("product_media").insert(mediaRows);
 
   revalidatePath("/admin/products");
   revalidatePath("/admin/templates");

@@ -16,6 +16,7 @@ export async function saveCategory(formData: FormData) {
     active: z.boolean(),
     defaultSizes: z.string(),
     defaultColors: z.string(),
+    imageUrl: z.string().trim().max(1000).optional(),
   }).parse({
     id: String(formData.get("id") ?? "") || undefined,
     name: formData.get("name"),
@@ -25,12 +26,13 @@ export async function saveCategory(formData: FormData) {
     active: formData.get("active") === "on",
     defaultSizes: String(formData.get("defaultSizes") ?? ""),
     defaultColors: String(formData.get("defaultColors") ?? ""),
+    imageUrl: String(formData.get("imageUrl") ?? "") || undefined,
   });
 
   const sizes=input.defaultSizes.split(",").map((v)=>v.trim()).filter(Boolean);
   const colors=input.defaultColors.split(",").map((v)=>v.trim()).filter(Boolean);
 
-  const { error } = await supabase.rpc("save_product_category_v2", {
+  const { data: savedCategory, error } = await supabase.rpc("save_product_category_v2", {
     category_id_input: input.id,
     category_name: input.name,
     category_description: input.description,
@@ -42,6 +44,21 @@ export async function saveCategory(formData: FormData) {
   });
 
   if(error) throw new Error(error.message);
+
+  const savedId = input.id || (
+    savedCategory && typeof savedCategory === "object" && !Array.isArray(savedCategory)
+      ? String((savedCategory as { id?: string }).id ?? "")
+      : ""
+  );
+
+  if (savedId) {
+    const { error: imageError } = await supabase
+      .from("product_categories")
+      .update({ image_url: input.imageUrl || null } as never)
+      .eq("id", savedId);
+    if (imageError) throw new Error(imageError.message);
+  }
+
   revalidatePath("/admin/products/taxonomy");
 }
 

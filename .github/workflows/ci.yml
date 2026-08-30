@@ -36,3 +36,45 @@ jobs:
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           STRIPE_SECRET_KEY: sk_test_placeholder
           STRIPE_WEBHOOK_SECRET: whsec_placeholder
+
+  production-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for Vercel production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://creative-ape-merch-network.vercel.app"
+          for i in {1..24}; do
+            code="$(curl -sS -o /tmp/health.json -w '%{http_code}' "$BASE_URL/api/health" || true)"
+            if [ "$code" = "200" ]; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Attempt $i: health returned HTTP $code"
+            cat /tmp/health.json 2>/dev/null || true
+            sleep 10
+          done
+          echo "Production health check did not become healthy in time."
+          exit 1
+
+      - name: Verify public and auth routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://creative-ape-merch-network.vercel.app"
+          home="$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/")"
+          login="$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/login")"
+          admin="$(curl -sS -o /dev/null -w '%{http_code}' --max-redirs 0 "$BASE_URL/admin" || true)"
+          location="$(curl -sSI --max-redirs 0 "$BASE_URL/admin" | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}' || true)"
+          echo "home=$home login=$login admin=$admin location=$location"
+          test "$home" = "200"
+          test "$login" = "200"
+          case "$admin" in
+            301|302|303|307|308) ;;
+            *) echo "Expected /admin to redirect for anonymous users"; exit 1 ;;
+          esac
+          echo "$location" | grep -q '/login'

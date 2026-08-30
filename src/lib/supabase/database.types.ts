@@ -778,6 +778,53 @@ export type Database = {
           },
         ]
       }
+      organization_payout_settings: {
+        Row: {
+          display_label: string
+          organization_id: string
+          payout_method: string
+          status: string
+          submitted_at: string
+          submitted_by: string | null
+          updated_at: string
+          vault_secret_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          display_label: string
+          organization_id: string
+          payout_method: string
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          vault_secret_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          display_label?: string
+          organization_id?: string
+          payout_method?: string
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          vault_secret_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_payout_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_product_library: {
         Row: {
           category: string | null
@@ -1124,6 +1171,7 @@ export type Database = {
           default_variant_groups: string[]
           description: string | null
           id: string
+          image_url: string | null
           name: string
           size_label: string
           slug: string
@@ -1142,6 +1190,7 @@ export type Database = {
           default_variant_groups?: string[]
           description?: string | null
           id?: string
+          image_url?: string | null
           name: string
           size_label?: string
           slug: string
@@ -1160,6 +1209,7 @@ export type Database = {
           default_variant_groups?: string[]
           description?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           size_label?: string
           slug?: string
@@ -2256,6 +2306,63 @@ export type Database = {
           },
         ]
       }
+      store_domains: {
+        Row: {
+          hostname: string
+          id: string
+          is_primary: boolean
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          store_id: string
+          updated_at: string
+          verification_message: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          hostname: string
+          id?: string
+          is_primary?: boolean
+          organization_id: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+          verification_message?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          hostname?: string
+          id?: string
+          is_primary?: boolean
+          organization_id?: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+          verification_message?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_domains_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_domains_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_layout_templates: {
         Row: {
           active: boolean
@@ -3016,6 +3123,10 @@ export type Database = {
           store_slug: string
         }[]
       }
+      get_organization_admin_settings_v1: {
+        Args: { target_organization_id: string }
+        Returns: Json
+      }
       get_product_library_filters: { Args: never; Returns: Json }
       get_public_cart_quote_v2: {
         Args: { cart_items: Json; target_store_slug: string }
@@ -3245,6 +3356,8 @@ export type Database = {
         Args: { target_page_slug: string; target_store_slug: string }
         Returns: Json
       }
+      get_super_admin_domain_requests_v1: { Args: never; Returns: Json }
+      get_super_admin_payout_settings_v1: { Args: never; Returns: Json }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
       is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
@@ -3275,6 +3388,10 @@ export type Database = {
           detail: string
           passed: boolean
         }[]
+      }
+      reveal_organization_payout_details_v1: {
+        Args: { target_organization_id: string }
+        Returns: Json
       }
       save_admin_collection_v2: {
         Args: {
@@ -3317,6 +3434,14 @@ export type Database = {
         }
         Returns: Json
       }
+      save_organization_payout_details_v1: {
+        Args: {
+          payout_details: Json
+          payout_method_input: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       save_product_category_v2: {
         Args: {
           active_input?: boolean
@@ -3338,6 +3463,10 @@ export type Database = {
           target_product_id: string
         }
         Returns: undefined
+      }
+      save_store_domain_request_v1: {
+        Args: { requested_hostname: string; target_store_id: string }
+        Returns: Json
       }
       search_product_library: {
         Args: {
@@ -3374,6 +3503,14 @@ export type Database = {
       sync_product_library_item: {
         Args: { target_product_id: string }
         Returns: undefined
+      }
+      update_store_domain_status_v1: {
+        Args: {
+          status_input: string
+          target_domain_id: string
+          verification_message_input?: string
+        }
+        Returns: Json
       }
     }
     Enums: {

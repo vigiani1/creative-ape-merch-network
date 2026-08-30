@@ -11,6 +11,7 @@ const nav = [
   ["/portal/orders", "Orders"],
   ["/portal/reports", "Reports"],
   ["/portal/payouts", "Payouts"],
+  ["/portal/settings", "Admin Settings"],
 ].map(([href, label]) => ({ href, label }));
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {

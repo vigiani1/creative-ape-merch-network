@@ -103,7 +103,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               ))}
             </div>
 
-            <AddToCartButton productId={product.id} storeSlug={store.slug} name={product.name} unitPrice={Number(product.retail_price)} />
+            <AddToCartButton
+              productId={product.id}
+              storeSlug={store.slug}
+              name={product.name}
+              unitPrice={Number(product.retail_price)}
+              variants={((variants || []) as PublicVariant[]).map((variant) => ({
+                id: variant.id,
+                size: variant.size,
+                color: variant.color,
+                price_override: variant.price_override,
+              }))}
+            />
           </div>
         </div>
       </div>

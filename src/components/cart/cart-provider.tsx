@@ -10,16 +10,22 @@ export type CartItem = {
   name: string;
   unitPrice: number;
   quantity: number;
+  size?: string | null;
+  color?: string | null;
+  imageUrl?: string | null;
 };
 
 type CartContextValue = {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
+  isOpen: boolean;
   addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   setQuantity: (productId: string, variantId: string | null | undefined, quantity: number) => void;
   removeItem: (productId: string, variantId?: string | null) => void;
   clear: () => void;
+  openCart: () => void;
+  closeCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -32,6 +38,7 @@ function sameLine(a: Pick<CartItem, "productId" | "variantId">, b: Pick<CartItem
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const hydrationTimer = window.setTimeout(() => {
@@ -59,19 +66,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     items,
     itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
     subtotal: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    isOpen,
     addItem(item) {
       const requestedQuantity = Math.max(1, Math.min(item.quantity ?? 1, 25));
       setItems((current) => {
-        const existing = current.find((entry) => sameLine(entry, item));
+        const sameStoreItems = current.filter((entry) => entry.storeSlug === item.storeSlug);
+        const existing = sameStoreItems.find((entry) => sameLine(entry, item));
         if (existing) {
-          return current.map((entry) =>
-            sameLine(entry, item) ? { ...entry, quantity: Math.min(entry.quantity + requestedQuantity, 25) } : entry
+          return sameStoreItems.map((entry) =>
+            sameLine(entry, item)
+              ? { ...entry, quantity: Math.min(entry.quantity + requestedQuantity, 25) }
+              : entry
           );
         }
-        const sameStoreItems = current.filter((entry) => entry.storeSlug === item.storeSlug);
         const { quantity: _ignored, ...line } = item;
         return [...sameStoreItems, { ...line, variantId: item.variantId ?? null, quantity: requestedQuantity }];
       });
+      setIsOpen(true);
     },
     setQuantity(productId, variantId, quantity) {
       setItems((current) => current.map((item) =>
@@ -84,7 +95,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setItems((current) => current.filter((item) => !sameLine(item, { productId, variantId })));
     },
     clear() { setItems([]); },
-  }), [items]);
+    openCart() { setIsOpen(true); },
+    closeCart() { setIsOpen(false); },
+  }), [items, isOpen]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

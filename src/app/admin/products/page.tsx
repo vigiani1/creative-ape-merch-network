@@ -44,7 +44,8 @@ export default async function ProductsPage() {
                 <th className="py-3 pr-4 font-semibold">Cost</th>
                 <th className="py-3 pr-4 font-semibold">Markup</th>
                 <th className="py-3 pr-4 font-semibold">Status</th>
-                <th className="py-3 font-semibold">Page</th>
+                <th className="py-3 pr-4 font-semibold">Page</th>
+                <th className="py-3 font-semibold">Manage</th>
               </tr>
             </thead>
             <tbody>
@@ -73,10 +74,11 @@ export default async function ProductsPage() {
                         <Link className="font-semibold underline" href={`/shop/${store.slug}/products/${product.slug}`} target="_blank">Open</Link>
                       ) : <span className="text-black/35">Not published</span>}
                     </td>
+                    <td className="py-4"><Link href={`/admin/products/${product.id}`} className="font-semibold underline">Edit</Link></td>
                   </tr>
                 );
               })}
-              {!products?.length && <tr><td colSpan={7} className="py-10 text-center text-black/45">No products yet.</td></tr>}
+              {!products?.length && <tr><td colSpan={8} className="py-10 text-center text-black/45">No products yet.</td></tr>}
             </tbody>
           </table>
         </div>

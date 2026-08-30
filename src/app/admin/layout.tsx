@@ -16,13 +16,21 @@ const nav = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireSuperAdmin();
+  const { supabase } = await requireSuperAdmin();
+  const { data: stores, error } = await supabase
+    .from("stores")
+    .select("id,name,slug")
+    .neq("status","archived")
+    .order("name");
+
+  if(error) throw new Error("Unable to load admin store context.");
 
   return (
     <AppShell
       title="Creative Ape Admin"
       eyebrow="Merch Network"
       nav={nav}
+      stores={(stores ?? []).map((store)=>({id:store.id,name:store.name,slug:store.slug}))}
     >
       {children}
     </AppShell>

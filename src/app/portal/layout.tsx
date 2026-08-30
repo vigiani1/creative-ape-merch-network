@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 const nav = [
   ["/portal", "Dashboard"],
+  ["/portal/stores", "Storefronts"],
   ["/portal/orders", "Orders"],
   ["/portal/reports", "Reports"],
   ["/portal/payouts", "Payouts"],

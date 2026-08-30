@@ -29,6 +29,8 @@ export function ProductDetailExperience({
   productId,
   storeSlug,
   name,
+  description,
+  categoryLabel,
   basePriceCents,
   media,
   sizes,
@@ -38,6 +40,8 @@ export function ProductDetailExperience({
   productId: string;
   storeSlug: string;
   name: string;
+  description?: string | null;
+  categoryLabel: string;
   basePriceCents: number;
   media: MediaItem[];
   sizes: string[];
@@ -91,6 +95,10 @@ export function ProductDetailExperience({
 
       <aside className="pdp-panel">
         <div className="pdp-panel__sticky">
+          <p className="store-eyebrow">{categoryLabel}</p>
+          <h1>{name}</h1>
+          {description ? <p className="pdp-description">{description}</p> : null}
+
           <ProductPurchasePanel
             productId={productId}
             storeSlug={storeSlug}
@@ -103,6 +111,27 @@ export function ProductDetailExperience({
             selectedColorExternal={selectedColor}
             onColorChange={setSelectedColor}
           />
+
+          <div className="pdp-accordions">
+            <details open>
+              <summary>Details</summary>
+              <div><p>{description || "Official merchandise produced by Creative Ape Branding."}</p></div>
+            </details>
+            <details>
+              <summary>Shipping</summary>
+              <div><p>Shipping options and delivery estimates are shown at checkout.</p></div>
+            </details>
+            <details>
+              <summary>Returns</summary>
+              <div><p>Return eligibility depends on the product and customization. Review store policies before ordering.</p></div>
+            </details>
+            {sizes.length ? (
+              <details id="size-guide">
+                <summary>Size guide</summary>
+                <div><p>Choose your usual apparel size unless the product description notes a special fit.</p></div>
+              </details>
+            ) : null}
+          </div>
         </div>
       </aside>
     </section>

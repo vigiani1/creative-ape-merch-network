@@ -11,12 +11,17 @@ export default async function MediaPage() {
 
   if (orgError || assetError) throw new Error("Unable to load Media Library.");
 
+  const resolvedAssets=(assets ?? []).map((asset)=>({
+    ...asset,
+    publicUrl:supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
+  }));
+
   return (
     <div className="admin-page">
       <section className="admin-page-head">
         <div>
           <p className="admin-kicker">Assets</p>
-          <h2>Media</h2>
+          <h2>Media Library</h2>
           <p>Upload once, then reuse product photography, logos, campaign art, video, and PDFs.</p>
         </div>
       </section>
@@ -28,7 +33,7 @@ export default async function MediaPage() {
           name: org.name,
           number: Number(org.organization_number),
         }))}
-        assets={assets ?? []}
+        assets={resolvedAssets}
       />
     </div>
   );

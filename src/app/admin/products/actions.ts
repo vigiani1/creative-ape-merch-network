@@ -331,13 +331,11 @@ export async function saveProductOptions(formData: FormData) {
     normalized.add(key);
   }
 
-  const { data: product, error: productError } = await supabase
-    .from("products")
-    .select("id,slug,stores:stores!products_store_id_fkey(slug)")
-    .eq("id", input.productId)
-    .single();
-
-  if (productError || !product) throw new Error("Product not found.");
+  const { data: productRows, error: productError } = await supabase.rpc("get_org_admin_product_option_editor", {
+    target_product_id: input.productId,
+  });
+  const product = productRows?.[0];
+  if (productError || !product) throw new Error("Product not found or you do not have permission.");
 
   const { error } = await supabase.rpc("save_product_size_color_options", {
     target_product_id: input.productId,
@@ -348,11 +346,12 @@ export async function saveProductOptions(formData: FormData) {
 
   if (error) throw new Error(error.message || "Unable to save size, color, and inventory options.");
 
-  const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
   revalidatePath(`/admin/products/${input.productId}`);
   revalidatePath("/admin/products");
-  if (store?.slug) {
-    revalidatePath(`/shop/${store.slug}`);
-    revalidatePath(`/shop/${store.slug}/products/${product.slug}`);
+  revalidatePath(`/portal/products/${input.productId}`);
+  revalidatePath("/portal/library");
+  if (product.store_slug) {
+    revalidatePath(`/shop/${product.store_slug}`);
+    revalidatePath(`/shop/${product.store_slug}/products/${product.product_slug}`);
   }
 }

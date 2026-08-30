@@ -24,6 +24,9 @@ export async function createStore(formData: FormData) {
     title: String(formData.get("title") ?? "") || undefined,
     description: String(formData.get("description") ?? "") || undefined,
     status: formData.get("status"),
+    availabilityStatus: formData.get("availabilityStatus"),
+    startsAt: String(formData.get("startsAt") ?? "") || undefined,
+    endsAt: String(formData.get("endsAt") ?? "") || undefined,
   });
 
   const { data: store, error } = await supabase
@@ -66,6 +69,9 @@ const UpdateStore = z.object({
   title: z.string().trim().max(160).optional(),
   description: z.string().trim().max(1000).optional(),
   status: z.enum(["draft", "published", "archived"]),
+  availabilityStatus: z.enum(["active", "paused", "discontinued"]),
+  startsAt: z.string().optional(),
+  endsAt: z.string().optional(),
 });
 
 export async function updateStore(formData: FormData) {
@@ -96,6 +102,9 @@ export async function updateStore(formData: FormData) {
       title: input.title ?? null,
       description: input.description ?? null,
       status: input.status,
+      availability_status: input.availabilityStatus,
+      starts_at: input.startsAt ? new Date(input.startsAt).toISOString() : null,
+      ends_at: input.endsAt ? new Date(input.endsAt).toISOString() : null,
       published_at: input.status === "published" ? (existing.published_at ?? new Date().toISOString()) : existing.published_at,
     })
     .eq("id", input.id);

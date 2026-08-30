@@ -8,6 +8,8 @@ const nav = [
   ["/admin/organizations", "Organizations"],
   ["/admin/stores", "Stores"],
   ["/admin/products", "Products"],
+  ["/admin/branding", "Branding"],
+  ["/admin/media", "Media"],
   ["/admin/orders", "Orders"],
   ["/admin/fulfillment", "Fulfillment"],
   ["/admin/reports", "Reports"],

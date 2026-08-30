@@ -730,6 +730,63 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          active: boolean
+          color_label: string
+          created_at: string
+          default_colors: string[]
+          default_sizes: string[]
+          default_variant_groups: string[]
+          description: string | null
+          id: string
+          name: string
+          size_label: string
+          slug: string
+          updated_at: string
+          uses_color: boolean
+          uses_size: boolean
+          uses_variant_group: boolean
+          variant_group_label: string
+        }
+        Insert: {
+          active?: boolean
+          color_label?: string
+          created_at?: string
+          default_colors?: string[]
+          default_sizes?: string[]
+          default_variant_groups?: string[]
+          description?: string | null
+          id?: string
+          name: string
+          size_label?: string
+          slug: string
+          updated_at?: string
+          uses_color?: boolean
+          uses_size?: boolean
+          uses_variant_group?: boolean
+          variant_group_label?: string
+        }
+        Update: {
+          active?: boolean
+          color_label?: string
+          created_at?: string
+          default_colors?: string[]
+          default_sizes?: string[]
+          default_variant_groups?: string[]
+          description?: string | null
+          id?: string
+          name?: string
+          size_label?: string
+          slug?: string
+          updated_at?: string
+          uses_color?: boolean
+          uses_size?: boolean
+          uses_variant_group?: boolean
+          variant_group_label?: string
+        }
+        Relationships: []
+      }
       product_media: {
         Row: {
           alt_text: string | null
@@ -877,6 +934,7 @@ export type Database = {
           base_production_cost: number
           blank_product_cost: number
           category: string | null
+          category_id: string | null
           created_at: string
           description: string | null
           finished_sale_price: number
@@ -894,6 +952,7 @@ export type Database = {
           base_production_cost?: number
           blank_product_cost?: number
           category?: string | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           finished_sale_price?: number
@@ -911,6 +970,7 @@ export type Database = {
           base_production_cost?: number
           blank_product_cost?: number
           category?: string | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           finished_sale_price?: number
@@ -924,6 +984,13 @@ export type Database = {
           vendor_part_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "product_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_templates_vendor_id_fkey"
             columns: ["vendor_id"]
@@ -1632,6 +1699,14 @@ export type Database = {
           order_count: number
           organization_share: number
           outstanding_payouts: number
+        }[]
+      }
+      qc_database_report: {
+        Args: never
+        Returns: {
+          check_name: string
+          detail: string
+          passed: boolean
         }[]
       }
       storage_object_org_id: { Args: { object_name: string }; Returns: string }

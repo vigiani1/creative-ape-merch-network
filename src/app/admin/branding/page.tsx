@@ -4,13 +4,20 @@ import { requireSuperAdmin } from "@/lib/auth";
 export default async function BrandingPage() {
   const { supabase } = await requireSuperAdmin();
 
-  const { data: stores, error } = await supabase
-    .from("stores")
-    .select("id,organization_id,name,slug,status,store_themes(logo_url,hero_image_url,primary_color,secondary_color,accent_color,background_color,text_color),organizations(name)")
-    .neq("status", "archived")
-    .order("created_at", { ascending: false });
+  const [{ data: stores, error: storesError }, { data: themes, error: themesError }] = await Promise.all([
+    supabase
+      .from("stores")
+      .select("id,organization_id,name,slug,status")
+      .neq("status", "archived")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("store_themes")
+      .select("store_id,logo_url,hero_image_url,primary_color,secondary_color,accent_color,background_color,text_color"),
+  ]);
 
-  if (error) throw new Error("Unable to load store branding.");
+  if (storesError || themesError) throw new Error("Unable to load store branding.");
+
+  const themeByStore = new Map((themes ?? []).map((theme) => [theme.store_id, theme]));
 
   return (
     <div className="grid gap-6">
@@ -21,7 +28,7 @@ export default async function BrandingPage() {
       </div>
 
       {(stores ?? []).map((store) => {
-        const theme = Array.isArray(store.store_themes) ? store.store_themes[0] : store.store_themes;
+        const theme = themeByStore.get(store.id);
         if (!theme) return null;
         return (
           <StoreBrandingEditor

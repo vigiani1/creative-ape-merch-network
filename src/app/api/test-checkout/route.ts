@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const input = Body.parse(await request.json());
     const admin = createAdminClient();
 
-    const { data, error } = await (admin.rpc as any)("create_test_order", {
+    const { data, error } = await admin.rpc("create_test_order", {
       store_slug: input.storeSlug,
       customer_name: input.customerName,
       customer_email: input.customerEmail,

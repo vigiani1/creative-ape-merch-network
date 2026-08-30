@@ -20,36 +20,36 @@ function loginRedirect(request: NextRequest) {
 }
 
 export async function updateSession(request: NextRequest) {
+  const protectedPath = isProtectedPath(request.nextUrl.pathname);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  const protectedPath = isProtectedPath(request.nextUrl.pathname);
 
   if (!url || !key) {
     return protectedPath ? loginRedirect(request) : NextResponse.next({ request });
   }
 
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient<Database>(url, key, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-
   try {
+    new URL(url);
+
+    let response = NextResponse.next({ request });
+    const supabase = createServerClient<Database>(url, key, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        },
+      },
+    });
+
     const { data: claimsData } = await supabase.auth.getClaims();
     if (protectedPath && !claimsData?.claims?.sub) {
       return loginRedirect(request);
     }
-  } catch {
-    if (protectedPath) {
-      return loginRedirect(request);
-    }
-  }
 
-  return response;
+    return response;
+  } catch {
+    return protectedPath ? loginRedirect(request) : NextResponse.next({ request });
+  }
 }

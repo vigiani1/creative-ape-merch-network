@@ -29,7 +29,7 @@ export default async function PortalReportsPage() {
       <div>
         <p className="text-sm font-semibold text-black/45">Revenue</p>
         <h1 className="mt-1 text-2xl font-black">Reports</h1>
-        <p className="mt-2 text-sm text-black/55">Your organization sales and revenue share. Creative Ape internal production costs are not exposed here.</p>
+        <p className="mt-2 text-sm text-black/55">Your organization sales and revenue share. Creative Ape internal production costs are not exposed here.</p>\n        <a href="/api/portal/reports/organizations.csv" className="mt-4 inline-block rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Download CSV</a>
       </div>
 
       <div className="mt-6 overflow-x-auto">

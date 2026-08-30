@@ -9,7 +9,7 @@ function money(cents: number) {
 export default async function ProductsPage() {
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: stores, error: storesError }, { data: products, error: productsError }] = await Promise.all([
+  const [{ data: stores, error: storesError }, { data: products, error: productsError }, { data: vendors, error: vendorsError }] = await Promise.all([
     supabase
       .from("stores")
       .select("id,name,slug,status,organization_id,organizations(name)")
@@ -19,9 +19,10 @@ export default async function ProductsPage() {
       .from("products")
       .select("id,name,slug,sku,category,status,retail_price,production_cost,markup_amount,featured,store_id,stores(name,slug),organizations(name)")
       .order("created_at", { ascending: false }),
+    supabase.from("vendors").select("id,name").eq("active", true).order("name"),
   ]);
 
-  if (storesError || productsError) throw new Error("Unable to load products.");
+  if (storesError || productsError || vendorsError) throw new Error("Unable to load products.");
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
@@ -105,6 +106,13 @@ export default async function ProductsPage() {
           <label className="grid gap-2 text-sm font-semibold">Product slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="logo-tee" /></label>
           <label className="grid gap-2 text-sm font-semibold">SKU<input name="sku" maxLength={80} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="TEE-001" /></label>
           <label className="grid gap-2 text-sm font-semibold">Category<input name="category" maxLength={80} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Apparel" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Vendor
+            <select name="vendorId" defaultValue="" className="rounded-xl border border-black/15 px-4 py-3 font-normal">
+              <option value="">No vendor</option>
+              {(vendors ?? []).map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-semibold">Vendor part number<input name="vendorPartNumber" maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Supplier style / part #" /></label>
           <label className="grid gap-2 text-sm font-semibold">Description<textarea name="description" rows={3} maxLength={2000} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
 
           <div className="grid grid-cols-2 gap-3">

@@ -225,6 +225,7 @@ export async function cloneTemplateToStore(formData: FormData) {
     featured: input.featured,
     vendor_id: template.vendor_id,
     vendor_part_number: template.vendor_part_number,
+    custom_overrides: {},
   }).select("id").single();
 
   if (productError || !product) throw new Error(productError?.code === "23505" ? "That product slug is already used in this store." : "Unable to clone template.");

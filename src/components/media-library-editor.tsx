@@ -9,12 +9,12 @@ type Asset={
   mime_type:string|null;storage_path:string;alt_text:string|null;tags:string[];publicUrl:string;
 };
 
-export function MediaLibraryEditor({organizations,assets,allowMaster}:{organizations:Org[];assets:Asset[];allowMaster:boolean}) {
+export function MediaLibraryEditor({organizations,assets,allowMaster,initialOrganizationId="",initialScope}:{organizations:Org[];assets:Asset[];allowMaster:boolean;initialOrganizationId?:string;initialScope?:"master"|"organization"}) {
   const router=useRouter();
   const imageInput=useRef<HTMLInputElement>(null);
   const videoInput=useRef<HTMLInputElement>(null);
-  const [scope,setScope]=useState<"master"|"organization">(allowMaster?"master":"organization");
-  const [organizationId,setOrganizationId]=useState(organizations[0]?.id ?? "");
+  const [scope,setScope]=useState<"master"|"organization">(initialScope ?? (allowMaster?"master":"organization"));
+  const [organizationId,setOrganizationId]=useState(initialOrganizationId || organizations[0]?.id || "");
   const [query,setQuery]=useState("");
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState<string|null>(null);

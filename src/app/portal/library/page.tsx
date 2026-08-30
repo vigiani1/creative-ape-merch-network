@@ -30,7 +30,7 @@ export default async function PortalProductLibraryPage({ searchParams }: { searc
   const { data: items, error } = await query;
   if (error) throw new Error("Unable to load product library.");
 
-  const categories = [...new Set((categoryRows ?? []).map((row) => row.category).filter(Boolean))].sort();
+  const categories = [...new Set((categoryRows ?? []).map((row) => row.category).filter((value): value is string => Boolean(value)))].sort();
 
   return (
     <div className="grid gap-6">

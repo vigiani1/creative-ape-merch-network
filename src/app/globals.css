@@ -2893,3 +2893,25 @@ button:disabled,
   .admin-settings-summary article:last-child { border-bottom: 0; }
   .admin-settings-grid { grid-template-columns: 1fr; }
 }
+
+
+.admin-store-select-form {
+  display: grid;
+  grid-template-columns: minmax(220px,1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+.admin-store-select-form button {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 0;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .admin-store-select-form { grid-template-columns: 1fr; }
+}

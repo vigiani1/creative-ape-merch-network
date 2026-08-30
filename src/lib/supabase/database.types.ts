@@ -695,6 +695,53 @@ export type Database = {
           },
         ]
       }
+      product_template_variants: {
+        Row: {
+          availability_status: string
+          color: string | null
+          created_at: string
+          id: string
+          price_override: number | null
+          product_template_id: string
+          production_cost_override: number | null
+          size: string | null
+          sku_suffix: string | null
+          updated_at: string
+        }
+        Insert: {
+          availability_status?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          price_override?: number | null
+          product_template_id: string
+          production_cost_override?: number | null
+          size?: string | null
+          sku_suffix?: string | null
+          updated_at?: string
+        }
+        Update: {
+          availability_status?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          price_override?: number | null
+          product_template_id?: string
+          production_cost_override?: number | null
+          size?: string | null
+          sku_suffix?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_template_variants_product_template_id_fkey"
+            columns: ["product_template_id"]
+            isOneToOne: false
+            referencedRelation: "product_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_templates: {
         Row: {
           active: boolean

@@ -15,7 +15,9 @@ const TemplateInput = z.object({
   skuPrefix: z.string().trim().max(80).optional(),
   description: z.string().trim().max(2000).optional(),
   category: z.string().trim().max(80).optional(),
-  baseProductionCost: z.coerce.number().min(0).max(100000),
+  blankProductPrice: z.coerce.number().min(0).max(100000),
+  productionMaterialPrice: z.coerce.number().min(0).max(100000),
+  finishedSalePrice: z.coerce.number().min(0).max(100000),
   vendorId: z.union([z.literal(""), z.string().uuid()]),
   vendorPartNumber: z.string().trim().max(120).optional(),
   active: z.boolean(),
@@ -28,7 +30,9 @@ function parseTemplate(formData: FormData) {
     skuPrefix: String(formData.get("skuPrefix") ?? "") || undefined,
     description: String(formData.get("description") ?? "") || undefined,
     category: String(formData.get("category") ?? "") || undefined,
-    baseProductionCost: formData.get("baseProductionCost"),
+    blankProductPrice: formData.get("blankProductPrice"),
+    productionMaterialPrice: formData.get("productionMaterialPrice"),
+    finishedSalePrice: formData.get("finishedSalePrice"),
     vendorId: String(formData.get("vendorId") ?? ""),
     vendorPartNumber: String(formData.get("vendorPartNumber") ?? "") || undefined,
     active: formData.get("active") === "on",
@@ -41,7 +45,10 @@ function templateValues(input: z.infer<typeof TemplateInput>) {
     sku_prefix: input.skuPrefix ?? null,
     description: input.description ?? null,
     category: input.category ?? null,
-    base_production_cost: dollarsToCents(input.baseProductionCost),
+    blank_product_cost: dollarsToCents(input.blankProductPrice),
+    production_material_cost: dollarsToCents(input.productionMaterialPrice),
+    finished_sale_price: dollarsToCents(input.finishedSalePrice),
+    base_production_cost: dollarsToCents(input.blankProductPrice + input.productionMaterialPrice),
     vendor_id: input.vendorId || null,
     vendor_part_number: input.vendorPartNumber ?? null,
     active: input.active,
@@ -196,7 +203,7 @@ export async function cloneTemplateToStore(formData: FormData) {
   });
 
   const [{ data: template, error: templateError }, { data: store, error: storeError }] = await Promise.all([
-    supabase.from("product_templates").select("id,sku_prefix,description,category,base_production_cost,vendor_id,vendor_part_number").eq("id", input.templateId).single(),
+    supabase.from("product_templates").select("id,sku_prefix,description,category,base_production_cost,finished_sale_price,vendor_id,vendor_part_number").eq("id", input.templateId).single(),
     supabase.from("stores").select("id,organization_id,slug").eq("id", input.storeId).single(),
   ]);
   if (templateError || !template) throw new Error("Template not found.");

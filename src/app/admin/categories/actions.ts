@@ -170,3 +170,81 @@ export async function deleteProductCategoryField(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidatePath("/admin/onboarding");
 }
+
+
+const StandardCategoryPreset = z.object({
+  name: z.string().trim().min(2).max(80),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(80),
+  preset: z.enum(["apparel","headwear","drinkware","simple"]),
+});
+
+export async function createStandardCategory(formData: FormData) {
+  const { supabase } = await requireSuperAdmin();
+  const input = StandardCategoryPreset.parse({
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    preset: formData.get("preset"),
+  });
+
+  const presets = {
+    apparel: {
+      description: "Standard apparel with customer-selectable size and color.",
+      uses_variant_group: false,
+      variant_group_label: "Style",
+      uses_size: true,
+      size_label: "Size",
+      uses_color: true,
+      color_label: "Color",
+      default_variant_groups: [] as string[],
+      default_sizes: ["Small","Medium","Large","XL","2XL","3XL","4XL"],
+      default_colors: [] as string[],
+    },
+    headwear: {
+      description: "Headwear with style, size, and color options.",
+      uses_variant_group: true,
+      variant_group_label: "Hat style",
+      uses_size: true,
+      size_label: "Size",
+      uses_color: true,
+      color_label: "Color",
+      default_variant_groups: ["Fitted","Snapback","Flexfit","Velcro","Visor","Straw Hat"],
+      default_sizes: ["S","M","L","XL"],
+      default_colors: [] as string[],
+    },
+    drinkware: {
+      description: "Drinkware with capacity and color options.",
+      uses_variant_group: false,
+      variant_group_label: "Style",
+      uses_size: true,
+      size_label: "Capacity",
+      uses_color: true,
+      color_label: "Color",
+      default_variant_groups: [] as string[],
+      default_sizes: ["12 oz","16 oz","20 oz","24 oz","32 oz"],
+      default_colors: [] as string[],
+    },
+    simple: {
+      description: "Simple product with no required customer option groups.",
+      uses_variant_group: false,
+      variant_group_label: "Style",
+      uses_size: false,
+      size_label: "Size",
+      uses_color: false,
+      color_label: "Color",
+      default_variant_groups: [] as string[],
+      default_sizes: [] as string[],
+      default_colors: [] as string[],
+    },
+  } as const;
+
+  const { error } = await supabase.from("product_categories").insert({
+    name: input.name,
+    slug: input.slug,
+    ...presets[input.preset],
+    active: true,
+  });
+
+  if (error) throw new Error(error.code === "23505" ? "That category name or slug already exists." : "Unable to create standard category.");
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/onboarding");
+}

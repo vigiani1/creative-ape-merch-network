@@ -43,6 +43,12 @@ function settingItems(settings: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+function settingNumber(settings: unknown, key: string) {
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) return null;
+  const value = (settings as Record<string, unknown>)[key];
+  return typeof value === "number" ? value : typeof value === "string" && value ? Number(value) : null;
+}
+
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!hasSupabaseEnv()) return <main className="mx-auto max-w-5xl p-8"><SetupRequired area={`Storefront /shop/${slug}`} /></main>;
@@ -81,10 +87,21 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   const backgroundColor = theme?.background_color ?? "#ffffff";
   const textColor = theme?.text_color ?? "#111111";
   const heroColor = theme?.primary_color ?? "#111827";
+  const heroSection = sections.find((section) => section.section_type === "hero");
+  const heroImage = heroSection ? setting(heroSection.settings, "image_url") : "";
+  const heroVideo = heroSection ? setting(heroSection.settings, "video_url") : "";
+  const heroTitle = heroSection ? setting(heroSection.settings, "title") : "";
+  const heroBody = heroSection ? setting(heroSection.settings, "body") : "";
+  const heroButtonLabel = heroSection ? setting(heroSection.settings, "button_label") : "";
+  const heroButtonUrl = heroSection ? setting(heroSection.settings, "button_url") : "";
+  const heroButtonShape = heroSection ? setting(heroSection.settings, "button_shape") : "";
+  const heroAlign = heroSection ? setting(heroSection.settings, "align") : "left";
+  const heroMinHeight = heroSection ? settingNumber(heroSection.settings, "min_height") : null;
   const hasProductSection = sections.some((section) => ["featured_products", "product_grid"].includes(section.section_type));
 
-  const productGrid = (featuredOnly = false) => {
-    const rows = featuredOnly ? productRows.filter((product) => product.featured) : productRows;
+  const productGrid = (featuredOnly = false, limit?: number | null) => {
+    const baseRows = featuredOnly ? productRows.filter((product) => product.featured) : productRows;
+    const rows = limit ? baseRows.slice(0, limit) : baseRows;
     return (
       <section className="mx-auto grid max-w-6xl gap-5 px-6 py-10 md:grid-cols-2 lg:grid-cols-3">
         {rows.map((product) => {
@@ -111,22 +128,25 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   return (
     <main className="min-h-screen" style={{ backgroundColor, color: textColor }}>
       <section
-        className="border-b border-black/10 bg-cover bg-center px-6 py-16 text-white"
+        className="relative overflow-hidden border-b border-black/10 bg-cover bg-center px-6 py-16 text-white"
         style={{
           backgroundColor: heroColor,
-          backgroundImage: theme?.hero_image_url
-            ? `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("${theme.hero_image_url}")`
+          minHeight: heroMinHeight ? `${heroMinHeight}px` : undefined,
+          backgroundImage: (heroImage || theme?.hero_image_url)
+            ? `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("${heroImage || theme?.hero_image_url}")`
             : undefined,
         }}
       >
-        <div className="mx-auto max-w-6xl">
+        {heroVideo ? <video src={heroVideo} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover opacity-60" /> : null}
+        <div className={`relative mx-auto max-w-6xl ${heroAlign === "center" ? "text-center" : heroAlign === "right" ? "text-right" : "text-left"}`}>
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             {theme?.logo_url ? <img src={theme.logo_url} alt="" className="h-20 max-w-[240px] object-contain object-left" /> : <span />}
             {publicPages.length ? <nav className="flex flex-wrap gap-4 text-sm font-bold">{publicPages.map((page) => <Link key={page.slug} href={`/shop/${store.slug}/${page.slug}`}>{page.nav_label || page.title}</Link>)}</nav> : null}
           </div>
           <p className="text-sm font-bold uppercase tracking-[0.2em]">Creative Ape Merch Network</p>
-          <h1 className="mt-4 text-5xl font-black">{store.title || store.name}</h1>
-          <p className="mt-4 max-w-2xl text-white/80">{store.description}</p>
+          <h1 className="mt-4 text-5xl font-black">{heroTitle || store.title || store.name}</h1>
+          <p className={`mt-4 text-white/80 ${heroAlign === "center" ? "mx-auto max-w-2xl" : heroAlign === "right" ? "ml-auto max-w-2xl" : "max-w-2xl"}`}>{heroBody || store.description}</p>
+          {heroButtonLabel && heroButtonUrl ? <a href={heroButtonUrl} className={`mt-7 inline-block bg-white px-5 py-3 font-black text-black ${heroButtonShape === "pill" ? "rounded-full" : heroButtonShape === "square" ? "rounded-none" : "rounded-xl"}`}>{heroButtonLabel}</a> : null}
         </div>
       </section>
 
@@ -137,10 +157,16 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         const linkUrl = setting(section.settings, "link_url");
         const videoUrl = setting(section.settings, "video_url");
         const items = settingItems(section.settings);
+        const buttonLabel = setting(section.settings, "button_label");
+        const buttonUrl = setting(section.settings, "button_url");
+        const buttonShape = setting(section.settings, "button_shape");
+        const align = setting(section.settings, "align");
+        const minHeight = settingNumber(section.settings, "min_height");
+        const textAlign = align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
 
         if (section.section_type === "hero") return null;
-        if (section.section_type === "product_grid") return <div key={section.id}>{productGrid(false)}</div>;
-        if (section.section_type === "featured_products") return <div key={section.id}>{productGrid(true)}</div>;
+        if (section.section_type === "product_grid") return <div key={section.id}>{productGrid(false, settingNumber(section.settings, "featured_count"))}</div>;
+        if (section.section_type === "featured_products") return <div key={section.id}>{productGrid(true, settingNumber(section.settings, "featured_count"))}</div>;
 
         if (section.section_type === "announcement") {
           return (
@@ -162,11 +188,11 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
         if (["story", "text_image"].includes(section.section_type)) {
           return (
-            <section key={section.id} className="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-2 md:items-center">
-              <div>
+            <section key={section.id} className="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-2 md:items-center" style={{ minHeight: minHeight ?? undefined }}>
+              <div className={textAlign}>
                 {title ? <h2 className="text-3xl font-black">{title}</h2> : null}
                 {body ? <p className="mt-4 whitespace-pre-line text-lg opacity-65">{body}</p> : null}
-                {linkUrl ? <a href={linkUrl} className="mt-5 inline-block font-bold underline">Learn more</a> : null}
+                {buttonLabel && buttonUrl ? <a href={buttonUrl} className={`mt-5 inline-block bg-black px-5 py-3 font-bold text-white ${buttonShape === "pill" ? "rounded-full" : buttonShape === "square" ? "rounded-none" : "rounded-xl"}`}>{buttonLabel}</a> : linkUrl ? <a href={linkUrl} className="mt-5 inline-block font-bold underline">Learn more</a> : null}
               </div>
               {imageUrl ? <img src={imageUrl} alt="" className="w-full rounded-3xl object-cover" /> : <div className="aspect-video rounded-3xl bg-black/5" />}
             </section>

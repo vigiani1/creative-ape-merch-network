@@ -38,8 +38,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const [{ data: variants }, mediaResult, themeResult] = await Promise.all([
     supabase.rpc("get_public_product_variants", { target_product_id: product.id }),
-    (supabase.rpc as any)("get_public_product_media", { target_product_id: product.id }),
-    (supabase.rpc as any)("get_public_store_theme", { target_store_id: store.id }),
+    supabase.rpc("get_public_product_media", { target_product_id: product.id }),
+    supabase.rpc("get_public_store_theme", { target_store_id: store.id }),
   ]);
 
   const theme = themeResult.data?.[0] as PublicTheme | undefined;

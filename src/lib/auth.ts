@@ -7,10 +7,14 @@ export type OrganizationMembership = {
 };
 
 export async function requireUser() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) redirect("/login");
-  return { supabase, userId: String(data.claims.sub) };
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getClaims();
+    if (error || !data?.claims?.sub) redirect("/login");
+    return { supabase, userId: String(data.claims.sub) };
+  } catch {
+    redirect("/login");
+  }
 }
 
 export async function requireSuperAdmin() {

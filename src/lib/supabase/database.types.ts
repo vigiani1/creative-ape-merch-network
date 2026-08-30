@@ -1161,6 +1161,93 @@ export type Database = {
           },
         ]
       }
+      platform_shipping_settings: {
+        Row: {
+          allowed_services: Json
+          connection_status: string
+          created_at: string
+          fallback_rate_cents: number
+          free_shipping_threshold_cents: number | null
+          handling_fee_cents: number
+          id: string
+          origin_address1: string | null
+          origin_address2: string | null
+          origin_city: string | null
+          origin_company: string | null
+          origin_country: string
+          origin_email: string | null
+          origin_name: string | null
+          origin_phone: string | null
+          origin_postal_code: string | null
+          origin_state: string | null
+          package_height: number
+          package_length: number
+          package_name: string
+          package_weight_oz: number
+          package_width: number
+          provider: string
+          updated_at: string
+          updated_by: string | null
+          vault_secret_id: string | null
+        }
+        Insert: {
+          allowed_services?: Json
+          connection_status?: string
+          created_at?: string
+          fallback_rate_cents?: number
+          free_shipping_threshold_cents?: number | null
+          handling_fee_cents?: number
+          id?: string
+          origin_address1?: string | null
+          origin_address2?: string | null
+          origin_city?: string | null
+          origin_company?: string | null
+          origin_country?: string
+          origin_email?: string | null
+          origin_name?: string | null
+          origin_phone?: string | null
+          origin_postal_code?: string | null
+          origin_state?: string | null
+          package_height?: number
+          package_length?: number
+          package_name?: string
+          package_weight_oz?: number
+          package_width?: number
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+          vault_secret_id?: string | null
+        }
+        Update: {
+          allowed_services?: Json
+          connection_status?: string
+          created_at?: string
+          fallback_rate_cents?: number
+          free_shipping_threshold_cents?: number | null
+          handling_fee_cents?: number
+          id?: string
+          origin_address1?: string | null
+          origin_address2?: string | null
+          origin_city?: string | null
+          origin_company?: string | null
+          origin_country?: string
+          origin_email?: string | null
+          origin_name?: string | null
+          origin_phone?: string | null
+          origin_postal_code?: string | null
+          origin_state?: string | null
+          package_height?: number
+          package_length?: number
+          package_name?: string
+          package_weight_oz?: number
+          package_width?: number
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+          vault_secret_id?: string | null
+        }
+        Relationships: []
+      }
       product_categories: {
         Row: {
           active: boolean
@@ -3218,6 +3305,10 @@ export type Database = {
           sku: string
         }[]
       }
+      get_public_shipping_policy_v1: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
       get_public_store: {
         Args: { store_slug: string }
         Returns: {
@@ -3358,6 +3449,7 @@ export type Database = {
       }
       get_super_admin_domain_requests_v1: { Args: never; Returns: Json }
       get_super_admin_payout_settings_v1: { Args: never; Returns: Json }
+      get_super_admin_shipping_settings_v1: { Args: never; Returns: Json }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
       is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
@@ -3466,6 +3558,16 @@ export type Database = {
       }
       save_store_domain_request_v1: {
         Args: { requested_hostname: string; target_store_id: string }
+        Returns: Json
+      }
+      save_super_admin_shipping_settings_v1: {
+        Args: {
+          api_key_input?: string
+          origin_input?: Json
+          package_input?: Json
+          provider_input: string
+          rules_input?: Json
+        }
         Returns: Json
       }
       search_product_library: {

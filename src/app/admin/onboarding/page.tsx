@@ -10,7 +10,9 @@ export default async function ProductOnboardingPage() {
     { data: fields, error: fieldError },
     { data: templates, error: templateError },
     { data: variants, error: variantError },
+    { data: templateColors, error: templateColorsError },
     { data: stores, error: storeError },
+    { data: assets, error: assetsError },
   ] = await Promise.all([
     supabase.from("vendors").select("id,name").eq("active", true).order("name"),
     supabase
@@ -25,53 +27,63 @@ export default async function ProductOnboardingPage() {
       .order("display_order"),
     supabase
       .from("product_templates")
-      .select("id,name,vendor_id,vendor_part_number,category_id,category,description,sku_prefix,finished_sale_price,custom_data")
+      .select("id,name,vendor_id,vendor_part_number,category_id,category,description,sku_prefix,finished_sale_price,custom_data,primary_image_url,gallery_urls")
       .eq("active", true)
       .order("name"),
     supabase
       .from("product_template_variants")
-      .select("id,product_template_id,variant_group,size,color,sku_suffix,vendor_part_number")
+      .select("id,product_template_id,size,color")
+      .eq("show_on_card", true)
       .order("created_at"),
+    supabase
+      .from("product_template_color_options")
+      .select("id,product_template_id,color_name,image_url,display_order")
+      .eq("active", true)
+      .order("display_order"),
     supabase
       .from("stores")
       .select("id,name,status,organizations:organizations!stores_organization_id_fkey(name)")
       .neq("status", "archived")
       .order("name"),
+    supabase
+      .from("media_assets")
+      .select("id,title,file_name,storage_path,media_type")
+      .eq("media_type", "image")
+      .order("created_at", { ascending: false }),
   ]);
 
-  if (vendorError || categoryError || fieldError || templateError || variantError || storeError) {
+  if (vendorError || categoryError || fieldError || templateError || variantError || templateColorsError || storeError || assetsError) {
     throw new Error("Unable to load product onboarding.");
   }
 
-  const variantsByTemplate = new Map<string, {
-    id: string;
-    variantGroup: string;
-    size: string;
-    color: string;
-    skuSuffix: string;
-    vendorPartNumber: string;
-  }[]>();
+  const optionsByTemplate = new Map<string, { sizes: string[]; colors: { name: string; imageUrl: string }[] }>();
+  for (const template of templates ?? []) optionsByTemplate.set(template.id, { sizes: [], colors: [] });
 
   for (const variant of variants ?? []) {
-    const list = variantsByTemplate.get(variant.product_template_id) ?? [];
-    list.push({
-      id: variant.id,
-      variantGroup: variant.variant_group ?? "",
-      size: variant.size ?? "",
-      color: variant.color ?? "",
-      skuSuffix: variant.sku_suffix ?? "",
-      vendorPartNumber: variant.vendor_part_number ?? "",
-    });
-    variantsByTemplate.set(variant.product_template_id, list);
+    const option = optionsByTemplate.get(variant.product_template_id);
+    if (!option) continue;
+    if (variant.size && !option.sizes.includes(variant.size)) option.sizes.push(variant.size);
   }
+
+  for (const color of templateColors ?? []) {
+    const option = optionsByTemplate.get(color.product_template_id);
+    if (!option) continue;
+    option.colors.push({ name: color.color_name, imageUrl: color.image_url ?? "" });
+  }
+
+  const mediaUrls = (assets ?? []).map((asset) => ({
+    id: asset.id,
+    label: asset.title || asset.file_name,
+    url: supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
+  }));
 
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-sm font-semibold text-black/45">Guided workflow</p>
+        <p className="text-sm font-semibold text-black/45">Standard ecommerce workflow</p>
         <h1 className="mt-1 text-3xl font-black">Product onboarding</h1>
         <p className="mt-2 max-w-4xl text-sm text-black/55">
-          Choose a vendor, then a saved vendor part number. Saved products remember their exact applicable variants. New products show only the variant fields configured for their category.
+          Add products the way a modern online shop does: Product → Media → Options → Inventory → Pricing → Store. Vendor part numbers remember reusable product data, sizes, colors, and color photos.
         </p>
       </div>
 
@@ -86,16 +98,14 @@ export default async function ProductOnboardingPage() {
         fields={fields ?? []}
         templates={(templates ?? []).map((template) => ({
           ...template,
-          variants: variantsByTemplate.get(template.id) ?? [],
+          gallery_urls: template.gallery_urls ?? [],
+          options: optionsByTemplate.get(template.id) ?? { sizes: [], colors: [] },
         }))}
         stores={(stores ?? []).map((store) => {
           const org = Array.isArray(store.organizations) ? store.organizations[0] : store.organizations;
-          return {
-            id: store.id,
-            name: store.name,
-            organizationName: org?.name ?? "Unknown organization",
-          };
+          return { id: store.id, name: store.name, organizationName: org?.name ?? "Unknown organization" };
         })}
+        mediaUrls={mediaUrls}
       />
     </div>
   );

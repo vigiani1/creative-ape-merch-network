@@ -15,7 +15,8 @@ function routeUsesStore(pathname:string){
   return pathname.startsWith("/admin/page-editor")
     || pathname.startsWith("/admin/store-design")
     || pathname.startsWith("/admin/products")
-    || pathname.startsWith("/admin/media");
+    || pathname.startsWith("/admin/media")
+    || /^\/admin\/stores\/[^/]+\/(?:pages|builder)/.test(pathname);
 }
 
 export function AppShell({

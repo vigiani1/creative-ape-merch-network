@@ -779,11 +779,15 @@ export type Database = {
         Row: {
           active: boolean
           base_production_cost: number
+          blank_product_cost: number
           category: string | null
           created_at: string
           description: string | null
+          finished_sale_price: number
           id: string
           name: string
+          production_material_cost: number
+          profit_each: number | null
           sku_prefix: string | null
           updated_at: string
           vendor_id: string | null
@@ -792,11 +796,15 @@ export type Database = {
         Insert: {
           active?: boolean
           base_production_cost?: number
+          blank_product_cost?: number
           category?: string | null
           created_at?: string
           description?: string | null
+          finished_sale_price?: number
           id?: string
           name: string
+          production_material_cost?: number
+          profit_each?: number | null
           sku_prefix?: string | null
           updated_at?: string
           vendor_id?: string | null
@@ -805,11 +813,15 @@ export type Database = {
         Update: {
           active?: boolean
           base_production_cost?: number
+          blank_product_cost?: number
           category?: string | null
           created_at?: string
           description?: string | null
+          finished_sale_price?: number
           id?: string
           name?: string
+          production_material_cost?: number
+          profit_each?: number | null
           sku_prefix?: string | null
           updated_at?: string
           vendor_id?: string | null

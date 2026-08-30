@@ -201,7 +201,7 @@ export default async function StoreDesignPage({
               <Link href={`/admin/page-editor?store=${model.store.id}`} className="admin-primary-action">Open Page Editor</Link>
             </div>
             <div className="admin-section-order">
-              <div><span>01</span><strong>Homepage</strong><Link href={`/admin/stores/${model.store.id}/builder`}>Edit homepage</Link></div>
+              <div><span>01</span><strong>Homepage</strong><Link href={`/admin/stores/${model.store.id}/builder?store=${model.store.id}`}>Edit homepage</Link></div>
               {(model.homepageSections ?? []).slice(0,5).map((section,index)=>(
                 <div key={section.id}>
                   <span>{String(index+2).padStart(2,"0")}</span>

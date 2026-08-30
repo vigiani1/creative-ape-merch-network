@@ -1,12 +1,15 @@
 import { MediaLibraryEditor } from "@/components/media-library-editor";
 import { requireSuperAdmin } from "@/lib/auth";
 
-export default async function MediaPage() {
+export default async function MediaPage({ searchParams }: { searchParams: Promise<Record<string,string|string[]|undefined>> }) {
+  const query = await searchParams;
+  const selectedStoreId = typeof query.store === "string" ? query.store : undefined;
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: organizations, error: orgError }, { data: assets, error: assetError }] = await Promise.all([
+  const [{ data: organizations, error: orgError }, { data: assets, error: assetError }, { data: selectedStore }] = await Promise.all([
     supabase.from("organizations").select("id,name,organization_number").neq("status","archived").order("name"),
     supabase.from("media_assets").select("id,organization_id,scope,media_type,title,file_name,mime_type,storage_path,alt_text,tags").order("created_at",{ ascending:false }),
+    selectedStoreId ? supabase.from("stores").select("organization_id").eq("id",selectedStoreId).maybeSingle() : Promise.resolve({ data:null, error:null }),
   ]);
 
   if (orgError || assetError) throw new Error("Unable to load Media Library.");
@@ -34,6 +37,8 @@ export default async function MediaPage() {
           number: Number(org.organization_number),
         }))}
         assets={resolvedAssets}
+        initialOrganizationId={selectedStore?.organization_id ?? ""}
+        initialScope={selectedStore?.organization_id ? "organization" : "master"}
       />
     </div>
   );

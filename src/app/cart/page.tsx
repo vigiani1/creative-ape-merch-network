@@ -28,7 +28,7 @@ export default function CartPage() {
           storeSlug,
           customerName,
           customerEmail,
-          items: items.map(({ productId, quantity }) => ({ productId, quantity })),
+          items: items.map(({ productId, variantId, quantity }) => ({ productId, variantId: variantId ?? null, quantity })),
         }),
       });
 
@@ -92,10 +92,10 @@ export default function CartPage() {
       ) : (
         <div className="mt-8 grid gap-4">
           {items.map((item) => (
-            <div key={item.productId} className="flex flex-wrap items-center gap-4 rounded-2xl border border-black/10 bg-white p-5">
+            <div key={`${item.productId}:${item.variantId ?? "base"}`} className="flex flex-wrap items-center gap-4 rounded-2xl border border-black/10 bg-white p-5">
               <div className="min-w-0 flex-1">
                 <p className="font-bold">{item.name}</p>
-                <p className="text-sm text-black/55">${(item.unitPrice / 100).toFixed(2)} each</p>
+                <p className="text-sm text-black/55">{item.variantLabel ? `${item.variantLabel} · ` : ""}${(item.unitPrice / 100).toFixed(2)} each</p>
               </div>
               <input
                 aria-label={`Quantity for ${item.name}`}
@@ -104,9 +104,9 @@ export default function CartPage() {
                 min={1}
                 max={25}
                 value={item.quantity}
-                onChange={(event) => setQuantity(item.productId, Number(event.target.value))}
+                onChange={(event) => setQuantity(item.productId, item.variantId, Number(event.target.value))}
               />
-              <button className="text-sm font-semibold underline" onClick={() => removeItem(item.productId)}>Remove</button>
+              <button className="text-sm font-semibold underline" onClick={() => removeItem(item.productId, item.variantId)}>Remove</button>
             </div>
           ))}
 

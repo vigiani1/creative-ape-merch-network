@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 
+const SUPABASE_FUNCTIONS_URL = "https://nqlwauyerrxcddjmdpcx.supabase.co/functions/v1";
+
 export default function CartPage() {
-  const { items, subtotal, setQuantity, removeItem, clear } = useCart();
+  const { items, subtotal, setQuantity, removeItem } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [line1, setLine1] = useState("");
@@ -15,179 +18,226 @@ export default function CartPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [testOrder, setTestOrder] = useState<{ orderNumber: string; grandTotal: number } | null>(null);
+
   const storeSlug = items[0]?.storeSlug;
 
-  async function createTestOrder() {
-    if (!storeSlug || items.length === 0) return;
+  const canCheckout = useMemo(() => {
+    return Boolean(
+      storeSlug &&
+      items.length > 0 &&
+      customerName.trim().length >= 2 &&
+      customerEmail.includes("@") &&
+      line1.trim().length >= 2 &&
+      city.trim().length >= 2 &&
+      state.trim().length >= 2 &&
+      postalCode.trim().length >= 3
+    );
+  }, [storeSlug, items.length, customerName, customerEmail, line1, city, state, postalCode]);
+
+  async function checkout() {
+    if (!storeSlug || !canCheckout) return;
 
     setLoading(true);
     setError(null);
-    setTestOrder(null);
 
     try {
-      const response = await fetch("/api/test-checkout", {
+      const origin = window.location.origin;
+      const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           storeSlug,
+          idempotencyKey: crypto.randomUUID(),
           customerName,
           customerEmail,
-          shippingAddress: { line1, line2: line2 || undefined, city, state, postal_code: postalCode, country: "US" },
-          items: items.map(({ productId, variantId, quantity }) => ({ productId, variantId: variantId ?? null, quantity })),
+          shippingAddress: {
+            line1,
+            line2: line2 || undefined,
+            city,
+            state,
+            postal_code: postalCode,
+            country: "US",
+          },
+          cartItems: items.map(({ productId, variantId, size, color, quantity }) => ({
+            productId,
+            variantId: variantId ?? null,
+            size: size ?? null,
+            color: color ?? null,
+            quantity,
+          })),
+          successUrl: `${origin}/checkout/success?store=${encodeURIComponent(storeSlug)}`,
+          cancelUrl: `${origin}/cart?checkout=cancelled`,
         }),
       });
 
       const payload = await response.json() as {
-        orderNumber?: string;
-        grandTotal?: number;
+        checkoutUrl?: string;
         error?: string;
+        errors?: { message?: string }[];
       };
 
-      if (!response.ok || !payload.orderNumber) {
-        throw new Error(payload.error || "Unable to create test order.");
+      if (!response.ok || !payload.checkoutUrl) {
+        throw new Error(
+          payload.error ||
+          payload.errors?.[0]?.message ||
+          "Checkout is temporarily unavailable."
+        );
       }
 
-      setTestOrder({
-        orderNumber: payload.orderNumber,
-        grandTotal: Number(payload.grandTotal ?? 0),
-      });
-      clear();
+      window.location.assign(payload.checkoutUrl);
     } catch (checkoutError) {
-      setError(checkoutError instanceof Error ? checkoutError.message : "Unable to create test order.");
+      setError(checkoutError instanceof Error ? checkoutError.message : "Checkout is temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
-  if (testOrder) {
+  if (!items.length) {
     return (
-      <main className="mx-auto max-w-3xl p-6 py-14">
-        <div className="rounded-3xl border border-black/10 bg-white p-8">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-black/45">Test checkout complete</p>
-          <h1 className="mt-3 text-4xl font-black">Order created</h1>
-          <p className="mt-4 text-black/60">
-            No card was charged and no real payment was processed. This order exists only so the app workflow can be tested.
-          </p>
-          <div className="mt-6 rounded-2xl bg-neutral-950 p-5 text-white">
-            <p className="text-sm text-white/55">Test order</p>
-            <p className="mt-1 text-2xl font-black">{testOrder.orderNumber}</p>
-            <p className="mt-3 text-lg font-bold">${(testOrder.grandTotal / 100).toFixed(2)}</p>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/admin/orders" className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white">View admin orders</Link>
-            {storeSlug ? <Link href={`/shop/${storeSlug}`} className="rounded-xl border border-black/15 px-4 py-3 text-sm font-bold">Back to store</Link> : null}
-          </div>
-        </div>
+      <main className="checkout-page">
+        <section className="checkout-empty">
+          <p className="store-eyebrow">Cart</p>
+          <h1>Your cart is empty.</h1>
+          <p>Head back to the store and find something worth printing.</p>
+          <Link href="/" className="store-button">Browse stores</Link>
+        </section>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6 py-12">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-black">Cart</h1>
-        {storeSlug ? <Link className="text-sm font-semibold underline" href={`/shop/${storeSlug}`}>Continue shopping</Link> : null}
-      </div>
-
-      {items.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-black/10 bg-white p-8">
-          <p className="font-bold">Your cart is empty.</p>
-          <Link href="/" className="mt-3 inline-block text-sm underline">Back to Creative Ape Merch Network</Link>
+    <main className="checkout-page">
+      <header className="checkout-header">
+        <div>
+          <p className="store-eyebrow">Checkout</p>
+          <h1>Almost yours.</h1>
         </div>
-      ) : (
-        <div className="mt-8 grid gap-4">
-          {items.map((item) => (
-            <div key={`${item.productId}:${item.variantId ?? "base"}`} className="flex flex-wrap items-center gap-4 rounded-2xl border border-black/10 bg-white p-5">
-              <div className="min-w-0 flex-1">
-                <p className="font-bold">{item.name}</p>
-                <p className="text-sm text-black/55">{item.variantLabel ? `${item.variantLabel} · ` : ""}${(item.unitPrice / 100).toFixed(2)} each</p>
-              </div>
-              <input
-                aria-label={`Quantity for ${item.name}`}
-                className="w-20 rounded-lg border border-black/15 px-3 py-2"
-                type="number"
-                min={1}
-                max={25}
-                value={item.quantity}
-                onChange={(event) => setQuantity(item.productId, item.variantId, Number(event.target.value))}
-              />
-              <button className="text-sm font-semibold underline" onClick={() => removeItem(item.productId, item.variantId)}>Remove</button>
-            </div>
-          ))}
+        {storeSlug ? <Link href={`/shop/${storeSlug}`}>Continue shopping</Link> : null}
+      </header>
 
-          <div className="mt-4 rounded-2xl bg-neutral-950 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <span>Subtotal</span>
-              <strong className="text-2xl">${(subtotal / 100).toFixed(2)}</strong>
+      <div className="checkout-layout">
+        <section className="checkout-form">
+          <div className="checkout-section">
+            <div className="checkout-section__heading">
+              <span>01</span>
+              <div>
+                <h2>Contact</h2>
+                <p>We’ll send your order confirmation here.</p>
+              </div>
             </div>
 
-            <div className="mt-6 rounded-2xl bg-white/5 p-5">
-              <p className="font-bold">Test checkout</p>
-              <p className="mt-2 text-sm text-white/60">Creates a real test order in the app database. No Stripe account, card, or money is involved.</p>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold">
-                  Customer name
-                  <input
-                    value={customerName}
-                    onChange={(event) => setCustomerName(event.target.value)}
-                    className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black"
-                    placeholder="Test Customer"
-                  />
-                </label>
-
-                <label className="grid gap-2 text-sm font-semibold">
-                  Customer email
-                  <input
-                    type="email"
-                    value={customerEmail}
-                    onChange={(event) => setCustomerEmail(event.target.value)}
-                    className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black"
-                    placeholder="test@example.com"
-                  />
-                </label>
-              </div>
-
-<div className="mt-4 grid gap-3 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold md:col-span-2">
-                  Shipping address
-                  <input value={line1} onChange={(event) => setLine1(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="123 Main St" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold md:col-span-2">
-                  Apt / Suite
-                  <input value={line2} onChange={(event) => setLine2(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="Optional" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold">
-                  City
-                  <input value={city} onChange={(event) => setCity(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold">
-                  State
-                  <input value={state} onChange={(event) => setState(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="CA" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold">
-                  ZIP / Postal code
-                  <input value={postalCode} onChange={(event) => setPostalCode(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" />
-                </label>
-              </div>
-
-              {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
-
-              <button
-                type="button"
-                onClick={createTestOrder}
-                disabled={loading || customerName.trim().length < 2 || !customerEmail.includes("@") || line1.trim().length < 2 || city.trim().length < 2 || state.trim().length < 2 || postalCode.trim().length < 3}
-                className="mt-5 w-full rounded-xl bg-white px-5 py-4 font-bold text-black disabled:opacity-50"
-              >
-                {loading ? "Creating test order..." : "Create test order · No payment"}
-              </button>
+            <div className="checkout-fields checkout-fields--two">
+              <label>
+                <span>Name</span>
+                <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} autoComplete="name" />
+              </label>
+              <label>
+                <span>Email</span>
+                <input type="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} autoComplete="email" />
+              </label>
             </div>
-
-            <p className="mt-4 text-xs text-white/45">Real payment checkout stays disabled until Stripe is deliberately connected later.</p>
           </div>
-        </div>
-      )}
+
+          <div className="checkout-section">
+            <div className="checkout-section__heading">
+              <span>02</span>
+              <div>
+                <h2>Shipping</h2>
+                <p>Where should we send the order?</p>
+              </div>
+            </div>
+
+            <div className="checkout-fields">
+              <label>
+                <span>Address</span>
+                <input value={line1} onChange={(event) => setLine1(event.target.value)} autoComplete="address-line1" />
+              </label>
+              <label>
+                <span>Apartment, suite, etc. <em>Optional</em></span>
+                <input value={line2} onChange={(event) => setLine2(event.target.value)} autoComplete="address-line2" />
+              </label>
+            </div>
+
+            <div className="checkout-fields checkout-fields--three">
+              <label>
+                <span>City</span>
+                <input value={city} onChange={(event) => setCity(event.target.value)} autoComplete="address-level2" />
+              </label>
+              <label>
+                <span>State</span>
+                <input value={state} onChange={(event) => setState(event.target.value)} autoComplete="address-level1" placeholder="CA" />
+              </label>
+              <label>
+                <span>ZIP code</span>
+                <input value={postalCode} onChange={(event) => setPostalCode(event.target.value)} autoComplete="postal-code" />
+              </label>
+            </div>
+          </div>
+
+          <div className="checkout-section checkout-section--payment">
+            <div className="checkout-section__heading">
+              <span>03</span>
+              <div>
+                <h2>Payment</h2>
+                <p>You’ll finish payment securely with Stripe.</p>
+              </div>
+            </div>
+
+            {error ? <div className="checkout-error">{error}</div> : null}
+
+            <button
+              type="button"
+              className="checkout-pay"
+              disabled={!canCheckout || loading}
+              onClick={checkout}
+            >
+              {loading ? "Preparing secure checkout…" : `Continue to payment · $${(subtotal / 100).toFixed(2)}`}
+            </button>
+
+            <p className="checkout-secure-note">Your cart is revalidated before payment. Prices and inventory are confirmed server-side.</p>
+          </div>
+        </section>
+
+        <aside className="checkout-summary">
+          <div className="checkout-summary__sticky">
+            <div className="checkout-summary__heading">
+              <h2>Order summary</h2>
+              <span>{items.reduce((sum, item) => sum + item.quantity, 0)} items</span>
+            </div>
+
+            <div className="checkout-summary__items">
+              {items.map((item) => (
+                <article key={`${item.productId}:${item.variantId ?? "base"}`} className="checkout-line">
+                  <div className="checkout-line__media">
+                    {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <div />}
+                    <span>{item.quantity}</span>
+                  </div>
+                  <div className="checkout-line__copy">
+                    <h3>{item.name}</h3>
+                    {item.color ? <p>Color: {item.color}</p> : null}
+                    {item.size ? <p>Size: {item.size}</p> : null}
+                    <div className="checkout-line__actions">
+                      <div className="checkout-line__qty">
+                        <button type="button" onClick={() => setQuantity(item.productId, item.variantId, item.quantity - 1)}>−</button>
+                        <span>{item.quantity}</span>
+                        <button type="button" onClick={() => setQuantity(item.productId, item.variantId, item.quantity + 1)}>+</button>
+                      </div>
+                      <button type="button" onClick={() => removeItem(item.productId, item.variantId)}>Remove</button>
+                    </div>
+                  </div>
+                  <strong>${((item.unitPrice * item.quantity) / 100).toFixed(2)}</strong>
+                </article>
+              ))}
+            </div>
+
+            <div className="checkout-summary__totals">
+              <div><span>Subtotal</span><strong>${(subtotal / 100).toFixed(2)}</strong></div>
+              <div><span>Shipping</span><span>Calculated next</span></div>
+              <div className="checkout-summary__total"><span>Total</span><strong>${(subtotal / 100).toFixed(2)} USD</strong></div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
   );
 }

@@ -478,6 +478,99 @@ export type Database = {
           },
         ]
       }
+      organization_product_library: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          search_metadata: Json
+          search_text: string
+          sku: string | null
+          source_product_id: string | null
+          source_template_id: string | null
+          status: string
+          store_id: string | null
+          updated_at: string
+          vendor_id: string | null
+          vendor_part_number: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          search_metadata?: Json
+          search_text?: string
+          sku?: string | null
+          source_product_id?: string | null
+          source_template_id?: string | null
+          status?: string
+          store_id?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          search_metadata?: Json
+          search_text?: string
+          sku?: string | null
+          source_product_id?: string | null
+          source_template_id?: string | null
+          status?: string
+          store_id?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_product_library_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_product_library_source_product_id_fkey"
+            columns: ["source_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_product_library_source_template_id_fkey"
+            columns: ["source_template_id"]
+            isOneToOne: false
+            referencedRelation: "product_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_product_library_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_product_library_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           contact_email: string | null
@@ -487,6 +580,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          organization_number: number
           organization_type: string
           slug: string
           status: string
@@ -500,6 +594,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          organization_number?: number
           organization_type?: string
           slug: string
           status?: string
@@ -513,6 +608,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          organization_number?: number
           organization_type?: string
           slug?: string
           status?: string
@@ -1539,6 +1635,10 @@ export type Database = {
         }[]
       }
       storage_object_org_id: { Args: { object_name: string }; Returns: string }
+      sync_product_library_item: {
+        Args: { target_product_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

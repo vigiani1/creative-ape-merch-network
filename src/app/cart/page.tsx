@@ -10,6 +10,11 @@ export default function CartPage() {
   const [error, setError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [line1, setLine1] = useState("");
+  const [line2, setLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const [testOrder, setTestOrder] = useState<{ orderNumber: string; grandTotal: number } | null>(null);
   const storeSlug = items[0]?.storeSlug;
 
@@ -28,6 +33,7 @@ export default function CartPage() {
           storeSlug,
           customerName,
           customerEmail,
+          shippingAddress: { line1, line2: line2 || undefined, city, state, postal_code: postalCode, country: "US" },
           items: items.map(({ productId, variantId, quantity }) => ({ productId, variantId: variantId ?? null, quantity })),
         }),
       });
@@ -143,12 +149,35 @@ export default function CartPage() {
                 </label>
               </div>
 
+<div className="mt-4 grid gap-3 md:grid-cols-2">
+                <label className="grid gap-2 text-sm font-semibold md:col-span-2">
+                  Shipping address
+                  <input value={line1} onChange={(event) => setLine1(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="123 Main St" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold md:col-span-2">
+                  Apt / Suite
+                  <input value={line2} onChange={(event) => setLine2(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="Optional" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">
+                  City
+                  <input value={city} onChange={(event) => setCity(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">
+                  State
+                  <input value={state} onChange={(event) => setState(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" placeholder="CA" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">
+                  ZIP / Postal code
+                  <input value={postalCode} onChange={(event) => setPostalCode(event.target.value)} className="rounded-xl border border-white/15 bg-white px-4 py-3 font-normal text-black" />
+                </label>
+              </div>
+
               {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
 
               <button
                 type="button"
                 onClick={createTestOrder}
-                disabled={loading || customerName.trim().length < 2 || !customerEmail.includes("@")}
+                disabled={loading || customerName.trim().length < 2 || !customerEmail.includes("@") || line1.trim().length < 2 || city.trim().length < 2 || state.trim().length < 2 || postalCode.trim().length < 3}
                 className="mt-5 w-full rounded-xl bg-white px-5 py-4 font-bold text-black disabled:opacity-50"
               >
                 {loading ? "Creating test order..." : "Create test order · No payment"}

@@ -1872,3 +1872,263 @@ button, input, select, textarea { font: inherit; }
   .admin-order-row { grid-template-columns: 1fr auto; }
   .admin-order-row > div:nth-child(2) { display: none; }
 }
+
+
+.admin-product-form {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 90px;
+}
+.admin-editor-section {
+  border: 1px solid #deded9;
+  background: #fff;
+}
+.admin-editor-section__head {
+  padding: 20px 22px;
+  border-bottom: 1px solid #ecece7;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.admin-editor-section__head > span {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d9d9d3;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+.admin-editor-section__head h3 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -.03em;
+}
+.admin-editor-section__head p {
+  margin: 5px 0 0;
+  color: #777;
+  font-size: 12px;
+}
+.admin-editor-fields {
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+.admin-editor-fields--two {
+  grid-template-columns: repeat(2,minmax(0,1fr));
+}
+.admin-field {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-field--wide { grid-column: 1 / -1; }
+.admin-field > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.admin-field em {
+  font-style: normal;
+  color: #888;
+  font-weight: 500;
+}
+.admin-field input,
+.admin-field textarea,
+.admin-field select {
+  width: 100%;
+  border: 1px solid #d9d9d3;
+  background: #fff;
+  padding: 0 12px;
+  outline: none;
+  font: inherit;
+  font-weight: 500;
+}
+.admin-field input,
+.admin-field select { height: 46px; }
+.admin-field textarea {
+  min-height: 120px;
+  padding-top: 12px;
+  resize: vertical;
+}
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-field select:focus {
+  border-color: #111;
+}
+.admin-money-input {
+  height: 46px;
+  border: 1px solid #d9d9d3;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+}
+.admin-money-input b {
+  text-align: center;
+  font-size: 13px;
+  color: #777;
+}
+.admin-money-input input {
+  height: 44px;
+  border: 0;
+  padding-left: 0;
+}
+
+.admin-size-options {
+  padding: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-size-options label {
+  position: relative;
+}
+.admin-size-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.admin-size-options span {
+  min-width: 66px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d9d9d3;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-size-options input:checked + span {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.admin-color-rows {
+  padding: 22px;
+  display: grid;
+  gap: 12px;
+}
+.admin-color-row {
+  padding: 14px;
+  border: 1px solid #e3e3de;
+  background: #fafaf7;
+  display: grid;
+  grid-template-columns: minmax(160px,.7fr) minmax(240px,1.3fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+.admin-row-remove,
+.admin-add-row {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.admin-row-remove {
+  height: 46px;
+  color: #8a3b3b;
+}
+.admin-add-row {
+  justify-self: start;
+  padding: 8px 0;
+  color: #555;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-collection-options {
+  padding: 0 22px 22px;
+}
+.admin-collection-options > p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-collection-options > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-collection-options label {
+  position: relative;
+}
+.admin-collection-options input {
+  position: absolute;
+  opacity: 0;
+}
+.admin-collection-options span {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d9d9d3;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-collection-options input:checked + span {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.admin-check-row {
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #d9d9d3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-check-row input { width: 15px; height: 15px; }
+
+.admin-editor-savebar {
+  position: sticky;
+  bottom: 14px;
+  z-index: 20;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid #d8d8d3;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 14px 40px rgba(0,0,0,.08);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.admin-editor-savebar a,
+.admin-editor-savebar button {
+  min-height: 42px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 750;
+}
+.admin-editor-savebar a {
+  border: 1px solid #d9d9d3;
+  background: #fff;
+}
+.admin-editor-savebar button {
+  border: 0;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .admin-editor-fields--two { grid-template-columns: 1fr; }
+  .admin-color-row { grid-template-columns: 1fr; }
+  .admin-row-remove { justify-self: start; height: auto; }
+  .admin-editor-savebar { bottom: 8px; }
+}

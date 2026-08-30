@@ -8,11 +8,12 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   if (!hasSupabaseEnv()) return <main className="mx-auto max-w-5xl p-8"><SetupRequired area={`Storefront /shop/${slug}`} /></main>;
 
   const supabase = await createClient();
-  const { data: store } = await supabase.from("stores").select("id,name,title,description,slug").eq("slug", slug).eq("status", "published").maybeSingle();
+  const { data: stores } = await supabase.rpc("get_public_store", { store_slug: slug });
+  const store = stores?.[0];
 
   if (!store) return <main className="mx-auto max-w-5xl p-8"><h1 className="text-3xl font-black">Store not found</h1><p className="mt-3 text-black/60">This storefront is not published or does not exist.</p></main>;
 
-  const { data: products } = await supabase.from("products").select("id,name,slug,description,retail_price,featured").eq("store_id", store.id).eq("status", "published").order("featured", { ascending: false });
+  const { data: products } = await supabase.rpc("get_public_store_products", { target_store_id: store.id });
 
   return (
     <main className="min-h-screen bg-white">

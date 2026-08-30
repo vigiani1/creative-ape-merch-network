@@ -7,13 +7,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!hasSupabaseEnv()) return <main className="mx-auto max-w-5xl p-8"><SetupRequired area="Product detail" /></main>;
 
   const supabase = await createClient();
-  const { data: store } = await supabase.from("stores").select("id,name,slug").eq("slug", slug).eq("status", "published").maybeSingle();
+  const { data: stores } = await supabase.rpc("get_public_store", { store_slug: slug });
+  const store = stores?.[0];
   if (!store) return <main className="p-8">Store not found.</main>;
 
-  const { data: product } = await supabase.from("products").select("id,name,description,retail_price").eq("store_id", store.id).eq("slug", productSlug).eq("status", "published").maybeSingle();
+  const { data: products } = await supabase.rpc("get_public_product", { target_store_id: store.id, product_slug: productSlug });
+  const product = products?.[0];
   if (!product) return <main className="p-8">Product not found.</main>;
 
-  const { data: variants } = await supabase.from("product_variants").select("id,size,color,sku,price_override,availability_status").eq("product_id", product.id).eq("availability_status", "available");
+  const { data: variants } = await supabase.rpc("get_public_product_variants", { target_product_id: product.id });
 
   return (
     <main className="mx-auto grid max-w-6xl gap-10 p-6 py-12 md:grid-cols-2">

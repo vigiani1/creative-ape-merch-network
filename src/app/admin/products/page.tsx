@@ -45,10 +45,11 @@ export default async function ProductsPage({
   const viewMode = query.view === "list" ? "list" : "grid";
   const status = typeof query.status === "string" ? query.status : undefined;
   const search = typeof query.q === "string" ? query.q : undefined;
+  const storeId = typeof query.store === "string" ? query.store : undefined;
 
   const { data, error } = await supabase.rpc("get_admin_product_library_page_v1", {
     target_organization_id: undefined,
-    target_store_id: undefined,
+    target_store_id: storeId,
     target_category_id: undefined,
     target_status: status,
     search_query: search,
@@ -68,16 +69,16 @@ export default async function ProductsPage({
         <div>
           <p className="admin-kicker">Catalog</p>
           <h2>Products</h2>
-          <p>{library?.filters?.count ?? items.length} products across your stores.</p>
+          <p>{storeId ? `${library?.filters?.count ?? items.length} products in the selected store.` : "Select a store to manage products."}</p>
         </div>
         <div className="admin-page-actions">
           <Link href="/admin/products/taxonomy" className="admin-secondary-action">Categories & Collections</Link>
-          <Link href="/admin/products/new" className="admin-primary-action">Add Product</Link>
+          <Link href={storeId ? `/admin/products/new?store=${storeId}` : "/admin/products/new"} className="admin-primary-action">Add Product</Link>
         </div>
       </section>
 
       <section className="admin-product-toolbar">
-        <form className="admin-search" action="/admin/products">
+        <form className="admin-search" action="/admin/products">{storeId ? <input type="hidden" name="store" value={storeId} /> : null}
           <input name="q" type="search" defaultValue={search} placeholder="Search products" />
           {viewMode !== "grid" ? <input type="hidden" name="view" value={viewMode} /> : null}
           <button type="submit">Search</button>
@@ -105,7 +106,7 @@ export default async function ProductsPage({
       {viewMode === "grid" ? (
         <section className="admin-product-grid">
           {items.map((product) => (
-            <Link href={product.target} key={product.id} className="admin-product-card">
+            <Link href={storeId ? `${product.target}?store=${storeId}` : product.target} key={product.id} className="admin-product-card">
               <div className="admin-product-card__media">
                 {product.imageUrl ? <img src={product.imageUrl} alt="" /> : <div><span>Creative Ape</span></div>}
                 <span className={`admin-status admin-status--${product.status}`}>{product.status}</span>
@@ -140,7 +141,7 @@ export default async function ProductsPage({
             <tbody>
               {items.map((product) => (
                 <tr key={product.id}>
-                  <td><Link href={product.target}>{product.name}</Link></td>
+                  <td><Link href={storeId ? `${product.target}?store=${storeId}` : product.target}>{product.name}</Link></td>
                   <td>{product.categoryName || "—"}</td>
                   <td>{product.stores?.[0]?.name || "—"}</td>
                   <td>{money(product.priceCents)}</td>

@@ -1,29 +1,72 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "@/app/login/actions";
 
-export type NavItem = { href: string; label: string };
+export type NavItem = { href: string; label: string; icon?: string };
 
-export function AppShell({ title, eyebrow, nav, children }: { title: string; eyebrow: string; nav: NavItem[]; children: React.ReactNode }) {
+export function AppShell({
+  title,
+  eyebrow,
+  nav,
+  children,
+}: {
+  title: string;
+  eyebrow: string;
+  nav: NavItem[];
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
   return (
-    <div className="min-h-screen bg-neutral-100 md:grid md:grid-cols-[260px_1fr]">
-      <aside className="border-b border-black/10 bg-neutral-950 p-6 text-white md:min-h-screen md:border-b-0 md:border-r">
-        <Link href="/" className="text-sm font-bold uppercase tracking-[0.18em]">Creative Ape</Link>
-        <p className="mt-2 text-xs text-white/50">{eyebrow}</p>
-        <nav className="mt-8 grid gap-1">
-          {nav.map((item) => (
-            <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm text-white/75 hover:bg-white/10 hover:text-white">{item.label}</Link>
-          ))}
-        </nav>
-        <form action={signOut} className="mt-8">
-          <button type="submit" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white">Sign out</button>
-        </form>
-      </aside>
-      <main className="p-6 md:p-10">
-        <div className="mx-auto max-w-7xl">
-          <h1 className="text-3xl font-black tracking-tight">{title}</h1>
-          <div className="mt-8">{children}</div>
+    <div className="admin-app">
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar__brand">
+          <Link href="/admin" className="admin-sidebar__wordmark">Creative Ape</Link>
+          <p>{eyebrow}</p>
         </div>
-      </main>
+
+        <nav className="admin-sidebar__nav" aria-label="Admin">
+          {nav.map((item) => {
+            const active = item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={active ? "admin-nav-link is-active" : "admin-nav-link"}
+              >
+                <span className="admin-nav-link__dot" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="admin-sidebar__footer">
+          <Link href="/shop/demo" target="_blank">View storefront ↗</Link>
+          <form action={signOut}>
+            <button type="submit">Sign out</button>
+          </form>
+        </div>
+      </aside>
+
+      <div className="admin-main">
+        <header className="admin-topbar">
+          <div>
+            <p className="admin-topbar__eyebrow">Admin</p>
+            <h1>{title}</h1>
+          </div>
+          <div className="admin-topbar__meta">
+            <span>Creative Ape Merch Network</span>
+          </div>
+        </header>
+
+        <main className="admin-content">{children}</main>
+      </div>
     </div>
   );
 }

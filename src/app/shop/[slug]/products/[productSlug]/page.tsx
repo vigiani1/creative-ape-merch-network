@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
-import { ProductPurchasePanel } from "@/components/storefront/product-purchase-panel";
+import { ProductDetailExperience } from "@/components/storefront/product-detail-experience";
 import { SetupRequired } from "@/components/setup-required";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -110,67 +110,23 @@ export default async function ProductPage({
         <span>{categoryLabel}</span>
       </div>
 
-      <section className="pdp-layout">
-        <div className="pdp-gallery">
-          {resolvedMedia.length ? (
-            resolvedMedia.map((item, index) => (
-              <figure key={item.id} className={index === 0 ? "pdp-gallery__item pdp-gallery__item--primary" : "pdp-gallery__item"}>
-                {item.url ? (
-                  <img src={item.url} alt={item.altText || detail.product.name} />
-                ) : (
-                  <div className="pdp-gallery__placeholder" />
-                )}
-              </figure>
-            ))
-          ) : (
-            <figure className="pdp-gallery__item pdp-gallery__item--primary">
-              <div className="pdp-gallery__placeholder">
-                <span>Creative Ape</span>
-              </div>
-            </figure>
-          )}
-        </div>
-
-        <aside className="pdp-panel">
-          <div className="pdp-panel__sticky">
-            <p className="store-eyebrow">{categoryLabel}</p>
-            <h1>{detail.product.name}</h1>
-            {detail.product.description ? <p className="pdp-description">{detail.product.description}</p> : null}
-
-            <ProductPurchasePanel
-              productId={detail.product.id}
-              storeSlug={home.store.slug}
-              name={detail.product.name}
-              basePriceCents={detail.product.priceCents}
-              imageUrl={primary?.url}
-              sizes={detail.sizes ?? []}
-              colors={detail.colors ?? []}
-              availability={detail.availability ?? []}
-            />
-
-            <div className="pdp-accordions">
-              <details open>
-                <summary>Details</summary>
-                <div><p>{detail.product.description || "Official merchandise produced by Creative Ape Branding."}</p></div>
-              </details>
-              <details>
-                <summary>Shipping</summary>
-                <div><p>Shipping options and delivery estimates are shown at checkout.</p></div>
-              </details>
-              <details>
-                <summary>Returns</summary>
-                <div><p>Return eligibility depends on the product and customization. Review store policies before ordering.</p></div>
-              </details>
-              {detail.sizes?.length ? (
-                <details id="size-guide">
-                  <summary>Size guide</summary>
-                  <div><p>Choose your usual apparel size unless the product description notes a special fit.</p></div>
-                </details>
-              ) : null}
-            </div>
-          </div>
-        </aside>
-      </section>
+      <ProductDetailExperience
+        productId={detail.product.id}
+        storeSlug={home.store.slug}
+        name={detail.product.name}
+        description={detail.product.description}
+        categoryLabel={categoryLabel}
+        basePriceCents={detail.product.priceCents}
+        media={resolvedMedia.map((item) => ({
+          id: item.id,
+          url: item.url,
+          altText: item.altText,
+          isPrimary: item.isPrimary,
+        }))}
+        sizes={detail.sizes ?? []}
+        colors={detail.colors ?? []}
+        availability={detail.availability ?? []}
+      />
 
       <footer className="store-footer">
         <div>

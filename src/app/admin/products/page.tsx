@@ -17,7 +17,7 @@ export default async function ProductsPage() {
       .order("name"),
     supabase
       .from("products")
-      .select("id,name,slug,sku,category,status,retail_price,production_cost,markup_amount,featured,store_id,stores(name,slug),organizations(name)")
+      .select("id,name,slug,sku,category,status,retail_price,production_cost,markup_amount,featured,store_id,stores:stores!products_store_id_fkey(name,slug),organizations:organizations!products_organization_id_fkey(name)")
       .order("created_at", { ascending: false }),
     supabase.from("vendors").select("id,name").eq("active", true).order("name"),
   ]);

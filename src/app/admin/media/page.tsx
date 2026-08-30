@@ -4,13 +4,26 @@ import { requireSuperAdmin } from "@/lib/auth";
 export default async function MediaPage() {
   const { supabase } = await requireSuperAdmin();
 
-  const { data: products, error } = await supabase
-    .from("products")
-    .select("id,organization_id,name,status,product_media(id,media_type,storage_path,external_url,alt_text,is_primary)")
-    .neq("status", "archived")
-    .order("created_at", { ascending: false });
+  const [{ data: products, error: productsError }, { data: mediaRows, error: mediaError }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id,organization_id,name,status")
+      .neq("status", "archived")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("product_media")
+      .select("id,product_id,media_type,storage_path,external_url,alt_text,is_primary,display_order")
+      .order("display_order", { ascending: true }),
+  ]);
 
-  if (error) throw new Error("Unable to load product media.");
+  if (productsError || mediaError) throw new Error("Unable to load product media.");
+
+  const mediaByProduct = new Map<string, typeof mediaRows>();
+  for (const item of mediaRows ?? []) {
+    const list = mediaByProduct.get(item.product_id) ?? [];
+    list.push(item);
+    mediaByProduct.set(item.product_id, list);
+  }
 
   return (
     <div className="grid gap-6">
@@ -26,7 +39,14 @@ export default async function MediaPage() {
           productId={product.id}
           organizationId={product.organization_id}
           productName={product.name}
-          media={product.product_media ?? []}
+          media={(mediaByProduct.get(product.id) ?? []).map((item) => ({
+            id: item.id,
+            media_type: item.media_type,
+            storage_path: item.storage_path,
+            external_url: item.external_url,
+            alt_text: item.alt_text,
+            is_primary: item.is_primary,
+          }))}
         />
       ))}
 

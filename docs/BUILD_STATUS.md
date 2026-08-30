@@ -1,34 +1,37 @@
 # Build status
 
 ## Completed in repository foundation
-- Project architecture and product specification
-- Current Next.js/React/Tailwind package foundation
-- Supabase SSR browser/server/admin clients
-- Supabase session proxy foundation
-- Admin navigation shell and placeholder sections
-- Organization portal shell and placeholder sections
-- Public store route backed by published Supabase data
-- Public product-detail route with variants
-- Stripe Checkout route foundation using server-side product pricing
-- Stripe webhook signature verification/idempotency-record foundation
-- Initial multi-tenant SQL schema and RLS migration
-- Environment variable template
-- Security and roadmap documentation
+- Product specification, architecture, database and security docs
+- Next.js 16 / React 19 / TypeScript / Tailwind foundation
+- Supabase SSR browser/server/admin clients and session proxy
+- Initial multi-tenant schema, indexes, RLS and guarded public storefront RPCs
+- Security hardening that prevents self-escalation and hides internal product/template costs
+- Admin navigation shell and planned section routes
+- Organization portal shell and planned section routes
+- Public store and product routes backed by published Supabase data
+- Browser cart with local persistence and one-store-at-a-time isolation
+- Stripe Checkout route using authoritative server-loaded published prices
+- Stripe webhook signature verification and idempotency-record foundation
+- Environment variable template and setup documentation
 
-## Needs validation in Codex/runtime
+## Needs runtime validation in Codex
 - `npm install`
-- lint
-- TypeScript typecheck
-- production build
-- package compatibility corrections if current package APIs changed
+- `npm run lint`
+- `npm run typecheck`
+- `npm run build`
+- Correct any package/API compatibility issues found by the runtime
+- Commit the generated lockfile after validation
 
-## Next milestone
-- Apply migration to the actual Supabase project
+## Next implementation milestone
+- Apply all Supabase migrations to the actual project
 - Configure environment variables
-- Implement Supabase Auth sign-in flow and role guards
-- Implement organization/store/product CRUD
-- Implement Supabase Storage upload policies and UI
-- Add real cart/order creation before enabling checkout
+- Implement Supabase Auth sign-in and route/role guards
+- Implement organization/store/product CRUD for Creative Ape admins
+- Add logo/product media upload workflows and storage policies
+- Upgrade cart to variant-aware line items
+- Create immutable order/order-item/ledger records before redirecting to Stripe
+- Process checkout/payment/refund webhook events into orders and ledger
+- Build live organization reporting and payout views
 
-## Not yet production-complete
-Checkout currently creates a Stripe Checkout Session from authoritative published product prices, but it does not yet create the complete immutable order/ledger record before redirect. That is intentionally left for the commerce milestone so money movement is not enabled until the transaction model is tested end to end.
+## Important commerce guardrail
+Stripe Checkout session creation exists as a foundation, but the platform is not production-commerce-ready until the immutable order + ledger write path is implemented and tested. Keep Stripe in test mode until that milestone is complete.

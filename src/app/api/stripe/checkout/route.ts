@@ -12,17 +12,25 @@ export async function POST(request: Request) {
   try {
     const input = Body.parse(await request.json());
     const supabase = await createClient();
-    const { data: store } = await supabase.from("stores").select("id,slug").eq("slug", input.storeSlug).eq("status", "published").maybeSingle();
+    const { data: stores } = await supabase.rpc("get_public_store", { store_slug: input.storeSlug });
+    const store = stores?.[0];
     if (!store) return NextResponse.json({ error: "Store not found" }, { status: 404 });
 
-    const ids = [...new Set(input.items.map((item) => item.productId))];
-    const { data: products, error } = await supabase.from("products").select("id,name,retail_price").eq("store_id", store.id).eq("status", "published").in("id", ids);
-    if (error || !products || products.length !== ids.length) return NextResponse.json({ error: "One or more products are unavailable" }, { status: 400 });
+    const { data: products, error } = await supabase.rpc("get_public_store_products", { target_store_id: store.id });
+    if (error || !products) return NextResponse.json({ error: "Unable to load store products" }, { status: 400 });
 
     const productMap = new Map(products.map((product) => [product.id, product]));
     const lineItems = input.items.map((item) => {
-      const product = productMap.get(item.productId)!;
-      return { quantity: item.quantity, price_data: { currency: "usd", unit_amount: Number(product.retail_price), product_data: { name: product.name } } };
+      const product = productMap.get(item.productId);
+      if (!product) throw new Error("One or more products are unavailable");
+      return {
+        quantity: item.quantity,
+        price_data: {
+          currency: "usd",
+          unit_amount: Number(product.retail_price),
+          product_data: { name: product.name },
+        },
+      };
     });
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
@@ -30,7 +38,7 @@ export async function POST(request: Request) {
       mode: "payment",
       line_items: lineItems,
       success_url: `${origin}/shop/${store.slug}?checkout=success`,
-      cancel_url: `${origin}/shop/${store.slug}?checkout=cancelled`,
+      cancel_url: `${origin}/cart?checkout=cancelled`,
       metadata: { store_id: store.id, store_slug: store.slug },
     });
 

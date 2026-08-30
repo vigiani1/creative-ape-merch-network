@@ -299,3 +299,60 @@ export async function deleteVariant(formData: FormData) {
   revalidatePath(`/admin/products/${input.productId}`);
   revalidatePath("/admin/products");
 }
+
+
+const ProductOptionEditorInput = z.object({
+  productId: z.string().uuid(),
+  sizesJson: z.string(),
+  colorsJson: z.string(),
+  qtyAvailable: z.coerce.number().int().min(0).max(1000000),
+});
+
+export async function saveProductOptions(formData: FormData) {
+  const { supabase } = await requireSuperAdmin();
+  const input = ProductOptionEditorInput.parse({
+    productId: formData.get("productId"),
+    sizesJson: String(formData.get("sizesJson") ?? "[]"),
+    colorsJson: String(formData.get("colorsJson") ?? "[]"),
+    qtyAvailable: formData.get("qtyAvailable"),
+  });
+
+  const sizes = z.array(z.enum(["Small","Medium","Large","XL","2XL","3XL","4XL"])).max(7).parse(JSON.parse(input.sizesJson));
+  const colors = z.array(z.object({
+    name: z.string().trim().min(1).max(80),
+    imageUrl: z.string().trim().max(1000).optional().default(""),
+    displayOrder: z.number().int().min(0).max(999),
+  })).max(50).parse(JSON.parse(input.colorsJson));
+
+  const normalized = new Set<string>();
+  for (const color of colors) {
+    const key = color.name.toLowerCase();
+    if (normalized.has(key)) throw new Error("Color names must be unique.");
+    normalized.add(key);
+  }
+
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select("id,slug,stores:stores!products_store_id_fkey(slug)")
+    .eq("id", input.productId)
+    .single();
+
+  if (productError || !product) throw new Error("Product not found.");
+
+  const { error } = await supabase.rpc("save_product_size_color_options", {
+    target_product_id: input.productId,
+    selected_sizes: sizes,
+    color_options: colors,
+    qty_available: input.qtyAvailable,
+  });
+
+  if (error) throw new Error(error.message || "Unable to save size, color, and inventory options.");
+
+  const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
+  revalidatePath(`/admin/products/${input.productId}`);
+  revalidatePath("/admin/products");
+  if (store?.slug) {
+    revalidatePath(`/shop/${store.slug}`);
+    revalidatePath(`/shop/${store.slug}/products/${product.slug}`);
+  }
+}

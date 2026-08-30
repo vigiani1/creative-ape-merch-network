@@ -7,6 +7,7 @@ const nav = [
   ["/portal", "Dashboard"],
   ["/portal/stores", "Storefronts"],
   ["/portal/library", "Product Library"],
+  ["/portal/media", "Media Library"],
   ["/portal/orders", "Orders"],
   ["/portal/reports", "Reports"],
   ["/portal/payouts", "Payouts"],

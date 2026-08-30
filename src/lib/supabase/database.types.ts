@@ -571,6 +571,74 @@ export type Database = {
           },
         ]
       }
+      organization_representatives: {
+        Row: {
+          active: boolean
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          country: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          organization_id: string
+          permission_tier: string
+          phone: string | null
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          organization_id: string
+          permission_tier?: string
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          organization_id?: string
+          permission_tier?: string
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_representatives_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           contact_email: string | null
@@ -1233,11 +1301,14 @@ export type Database = {
           effective_to: string | null
           fixed_amount: number | null
           id: string
+          label: string | null
           organization_id: string
           priority: number
           product_id: string | null
           rate: number | null
           rule_type: string
+          sales_threshold: number | null
+          share_cap: number | null
           store_id: string | null
         }
         Insert: {
@@ -1246,11 +1317,14 @@ export type Database = {
           effective_to?: string | null
           fixed_amount?: number | null
           id?: string
+          label?: string | null
           organization_id: string
           priority?: number
           product_id?: string | null
           rate?: number | null
           rule_type: string
+          sales_threshold?: number | null
+          share_cap?: number | null
           store_id?: string | null
         }
         Update: {
@@ -1259,11 +1333,14 @@ export type Database = {
           effective_to?: string | null
           fixed_amount?: number | null
           id?: string
+          label?: string | null
           organization_id?: string
           priority?: number
           product_id?: string | null
           rate?: number | null
           rule_type?: string
+          sales_threshold?: number | null
+          share_cap?: number | null
           store_id?: string | null
         }
         Relationships: [
@@ -1431,40 +1508,49 @@ export type Database = {
       }
       stores: {
         Row: {
+          availability_status: string
           created_at: string
           description: string | null
+          ends_at: string | null
           id: string
           name: string
           organization_id: string
           published_at: string | null
           slug: string
           social_links: Json
+          starts_at: string | null
           status: string
           title: string | null
           updated_at: string
         }
         Insert: {
+          availability_status?: string
           created_at?: string
           description?: string | null
+          ends_at?: string | null
           id?: string
           name: string
           organization_id: string
           published_at?: string | null
           slug: string
           social_links?: Json
+          starts_at?: string | null
           status?: string
           title?: string | null
           updated_at?: string
         }
         Update: {
+          availability_status?: string
           created_at?: string
           description?: string | null
+          ends_at?: string | null
           id?: string
           name?: string
           organization_id?: string
           published_at?: string | null
           slug?: string
           social_links?: Json
+          starts_at?: string | null
           status?: string
           title?: string | null
           updated_at?: string
@@ -1710,6 +1796,10 @@ export type Database = {
         }[]
       }
       storage_object_org_id: { Args: { object_name: string }; Returns: string }
+      store_is_publicly_available: {
+        Args: { s: Database["public"]["Tables"]["stores"]["Row"] }
+        Returns: boolean
+      }
       sync_product_library_item: {
         Args: { target_product_id: string }
         Returns: undefined

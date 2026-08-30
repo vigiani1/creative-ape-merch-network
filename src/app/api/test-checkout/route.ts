@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const ShippingAddress = z.object({
+  line1: z.string().trim().min(2).max(160),
+  line2: z.string().trim().max(160).optional(),
+  city: z.string().trim().min(2).max(120),
+  state: z.string().trim().min(2).max(120),
+  postal_code: z.string().trim().min(3).max(20),
+  country: z.string().trim().length(2).default("US"),
+});
+
 const Body = z.object({
   storeSlug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),
   customerName: z.string().trim().min(2).max(160),
   customerEmail: z.string().trim().email().max(320),
+  shippingAddress: ShippingAddress,
   items: z.array(z.object({
     productId: z.string().uuid(),
     variantId: z.string().uuid().nullable().optional(),
@@ -32,6 +42,10 @@ export async function POST(request: Request) {
       store_slug: input.storeSlug,
       customer_name: input.customerName,
       customer_email: input.customerEmail,
+      shipping_address: {
+        ...input.shippingAddress,
+        line2: input.shippingAddress.line2 || null,
+      },
       items: input.items,
     });
 
@@ -50,7 +64,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const message = error instanceof z.ZodError
-      ? "Check the customer details and cart items."
+      ? "Check the customer, shipping address, and cart details."
       : error instanceof Error
         ? error.message
         : "Unable to create test order.";

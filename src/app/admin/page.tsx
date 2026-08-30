@@ -19,8 +19,16 @@ export default async function AdminPage() {
       .from("orders")
       .select("id", { count: "exact", head: true })
       .not("fulfillment_status", "in", '("complete","cancelled","refunded")'),
-    supabase.from("orders").select("grand_total").eq("payment_status", "paid"),
-    supabase.from("ledger_entries").select("amount").eq("entry_type", "organization_share"),
+    supabase
+      .from("orders")
+      .select("grand_total")
+      .eq("payment_status", "paid")
+      .not("order_number", "like", "TEST-%"),
+    supabase
+      .from("ledger_entries")
+      .select("amount,orders!inner(order_number)")
+      .eq("entry_type", "organization_share")
+      .not("orders.order_number", "like", "TEST-%"),
   ]);
 
   const grossSales = (ordersResult.data ?? []).reduce((sum, row) => sum + row.grand_total, 0);
@@ -29,9 +37,9 @@ export default async function AdminPage() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <DashboardCard label="Organizations" value={String(orgsResult.count ?? 0)} detail="Active tenant records in Supabase." />
-      <DashboardCard label="Open orders" value={String(openOrdersResult.count ?? 0)} detail="Orders not yet complete, cancelled, or refunded." />
-      <DashboardCard label="Gross sales" value={money(grossSales)} detail="Paid order totals." />
-      <DashboardCard label="Org share owed" value={money(orgShareOwed)} detail="Organization-share ledger balance before payouts." />
+      <DashboardCard label="Open orders" value={String(openOrdersResult.count ?? 0)} detail="Includes test workflow orders until they are completed." />
+      <DashboardCard label="Gross sales" value={money(grossSales)} detail="Real paid order totals. Test orders are excluded." />
+      <DashboardCard label="Org share owed" value={money(orgShareOwed)} detail="Real organization-share balance before payouts. Test orders are excluded." />
     </div>
   );
 }

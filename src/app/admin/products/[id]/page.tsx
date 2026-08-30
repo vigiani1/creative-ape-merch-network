@@ -1,34 +1,62 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createVariant, deleteVariant, updateProduct, updateVariant } from "../actions";
+import { ProductOptionEditor } from "@/components/admin/product-option-editor";
+import { updateProduct } from "../actions";
 import { requireSuperAdmin } from "@/lib/auth";
-
-function dollars(cents: number | null) {
-  return cents === null ? "" : (cents / 100).toFixed(2);
-}
 
 export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: product, error }, { data: variants, error: variantsError }, { data: vendors, error: vendorsError }] = await Promise.all([
-    supabase
-      .from("products")
-      .select("id,name,slug,description,sku,category,status,retail_price,production_cost,default_revenue_share_rate,featured,vendor_id,vendor_part_number,stores:stores!products_store_id_fkey(slug)")
-      .eq("id", id)
-      .maybeSingle(),
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("id,organization_id,name,slug,description,sku,category,status,retail_price,production_cost,default_revenue_share_rate,featured,vendor_id,vendor_part_number,inventory_quantity,stores:stores!products_store_id_fkey(slug)")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !product) notFound();
+
+  const [
+    { data: variants, error: variantsError },
+    { data: colors, error: colorsError },
+    { data: vendors, error: vendorsError },
+    { data: assets, error: assetsError },
+  ] = await Promise.all([
     supabase
       .from("product_variants")
-      .select("id,size,color,sku,price_override,production_cost_override,inventory_quantity,availability_status")
+      .select("size,color")
       .eq("product_id", id)
+      .eq("managed_by_option_editor", true)
+      .eq("show_on_card", true)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("product_color_options")
+      .select("id,color_name,image_url,display_order")
+      .eq("product_id", id)
+      .eq("active", true)
+      .order("display_order"),
     supabase.from("vendors").select("id,name").eq("active", true).order("name"),
+    supabase
+      .from("media_assets")
+      .select("id,title,file_name,storage_path,scope,organization_id,media_type")
+      .or(`scope.eq.master,organization_id.eq.${product.organization_id}`)
+      .eq("media_type", "image")
+      .order("created_at", { ascending: false }),
   ]);
 
-  if (error || variantsError || vendorsError || !product) notFound();
+  if (variantsError || colorsError || vendorsError || assetsError) {
+    throw new Error("Unable to load product options.");
+  }
+
+  const initialSizes = [...new Set((variants ?? []).map((variant) => variant.size).filter((value): value is string => Boolean(value)))];
+  const mediaUrls = (assets ?? []).map((asset) => ({
+    id: asset.id,
+    label: asset.title || asset.file_name,
+    url: supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
+  }));
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-6">
+    <div className="mx-auto grid max-w-6xl gap-6">
       <div><Link href="/admin/products" className="text-sm font-semibold underline">Back to products</Link></div>
 
       <form action={updateProduct} className="grid gap-4 rounded-2xl border border-black/10 bg-white p-6">
@@ -97,99 +125,17 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
         <button type="submit" className="w-fit rounded-xl bg-black px-5 py-3 font-bold text-white">Save product</button>
       </form>
 
-      <section className="rounded-2xl border border-black/10 bg-white p-6">
-        <div>
-          <p className="text-sm font-semibold text-black/45">Sizes, colors, SKUs & inventory</p>
-          <h2 className="mt-1 text-2xl font-black">Variants</h2>
-          <p className="mt-2 text-sm text-black/55">Overrides are optional. Leave price or cost blank to inherit the main product values.</p>
-        </div>
-
-        <div className="mt-6 grid gap-4">
-          {(variants ?? []).map((variant) => (
-            <form key={variant.id} action={updateVariant} className="grid gap-3 rounded-2xl border border-black/10 p-4 lg:grid-cols-8 lg:items-end">
-              <input type="hidden" name="productId" value={product.id} />
-              <input type="hidden" name="variantId" value={variant.id} />
-
-              <label className="grid gap-1 text-xs font-semibold">Size
-                <input name="size" defaultValue={variant.size ?? ""} maxLength={80} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">Color
-                <input name="color" defaultValue={variant.color ?? ""} maxLength={80} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">SKU
-                <input name="sku" defaultValue={variant.sku ?? ""} maxLength={120} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">Price override $
-                <input name="priceOverride" type="number" min="0" step="0.01" defaultValue={dollars(variant.price_override)} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">Cost override $
-                <input name="productionCostOverride" type="number" min="0" step="0.01" defaultValue={dollars(variant.production_cost_override)} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">Inventory
-                <input name="inventoryQuantity" type="number" min="0" step="1" defaultValue={variant.inventory_quantity ?? ""} className="rounded-lg border border-black/15 px-3 py-2 font-normal" />
-              </label>
-
-              <label className="grid gap-1 text-xs font-semibold">Availability
-                <select name="availabilityStatus" defaultValue={variant.availability_status} className="rounded-lg border border-black/15 px-3 py-2 font-normal">
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
-                  <option value="discontinued">Discontinued</option>
-                </select>
-              </label>
-
-              <div className="flex gap-2">
-                <button type="submit" className="rounded-lg bg-black px-3 py-2 text-xs font-bold text-white">Save</button>
-                <button formAction={deleteVariant} type="submit" className="rounded-lg border border-black/15 px-3 py-2 text-xs font-bold">Delete</button>
-              </div>
-            </form>
-          ))}
-
-          {!variants?.length ? <p className="rounded-xl bg-neutral-50 p-4 text-sm text-black/45">No variants yet.</p> : null}
-        </div>
-
-        <form action={createVariant} className="mt-7 grid gap-3 rounded-2xl bg-neutral-50 p-4 lg:grid-cols-8 lg:items-end">
-          <input type="hidden" name="productId" value={product.id} />
-
-          <label className="grid gap-1 text-xs font-semibold">Size
-            <input name="size" maxLength={80} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" placeholder="XL" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">Color
-            <input name="color" maxLength={80} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" placeholder="Black" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">SKU
-            <input name="sku" maxLength={120} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" placeholder="TEE-BLK-XL" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">Price override $
-            <input name="priceOverride" type="number" min="0" step="0.01" className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">Cost override $
-            <input name="productionCostOverride" type="number" min="0" step="0.01" className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">Inventory
-            <input name="inventoryQuantity" type="number" min="0" step="1" className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" />
-          </label>
-
-          <label className="grid gap-1 text-xs font-semibold">Availability
-            <select name="availabilityStatus" defaultValue="available" className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal">
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
-              <option value="discontinued">Discontinued</option>
-            </select>
-          </label>
-
-          <button type="submit" className="rounded-lg bg-black px-3 py-2 text-xs font-bold text-white">Add variant</button>
-        </form>
-      </section>
+      <ProductOptionEditor
+        productId={product.id}
+        initialSizes={initialSizes}
+        initialColors={(colors ?? []).map((color) => ({
+          id: color.id,
+          name: color.color_name,
+          imageUrl: color.image_url ?? "",
+        }))}
+        initialQuantity={product.inventory_quantity}
+        mediaUrls={mediaUrls}
+      />
     </div>
   );
 }

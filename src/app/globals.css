@@ -2915,3 +2915,75 @@ button:disabled,
 @media (max-width: 560px) {
   .admin-store-select-form { grid-template-columns: 1fr; }
 }
+
+
+.portal-open-storefront {
+  background: #111 !important;
+  color: #fff !important;
+}
+.portal-open-storefront:visited,
+.portal-open-storefront:hover,
+.portal-open-storefront:focus {
+  color: #fff !important;
+}
+
+.admin-save-success {
+  padding: 14px 16px;
+  border: 1px solid #b9d7bd;
+  background: #eef8ef;
+  color: #285b2f;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+.admin-save-success strong { font-weight: 800; }
+.admin-save-success span { color: #55745a; }
+
+.admin-image-uploader {
+  display: grid;
+  gap: 10px;
+}
+.admin-image-uploader__preview {
+  width: min(280px,100%);
+  aspect-ratio: 4 / 3;
+  border: 1px solid #d9d9d3;
+  background: #f4f4f0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.admin-image-uploader__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-image-uploader__preview span {
+  color: #888;
+  font-size: 11px;
+}
+.admin-image-uploader__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.admin-image-uploader__actions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.admin-image-uploader__actions .admin-image-uploader__remove {
+  border: 1px solid #d9d9d3;
+  background: #fff;
+  color: #666;
+}
+.admin-image-uploader > p {
+  margin: 0;
+  color: #667;
+  font-size: 11px;
+}

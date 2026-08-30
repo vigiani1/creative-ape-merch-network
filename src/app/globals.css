@@ -343,3 +343,158 @@ button, input, select, textarea { font: inherit; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+.catalog-head {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 72px 28px 30px;
+}
+.catalog-head__row {
+  margin-top: 8px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.catalog-head h1 {
+  margin: 0;
+  font-size: clamp(46px, 6vw, 82px);
+  line-height: .96;
+  letter-spacing: -0.055em;
+  font-weight: 740;
+}
+.catalog-head__row p { margin: 0 0 8px; color: #777; font-size: 14px; }
+
+.catalog-controls {
+  position: sticky;
+  top: 76px;
+  z-index: 30;
+  width: 100%;
+  padding: 14px max(28px, calc((100vw - 1440px) / 2 + 28px));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(10px);
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto;
+  align-items: center;
+  gap: 22px;
+}
+.catalog-controls__search {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #222;
+}
+.catalog-controls__search input {
+  min-width: 0;
+  flex: 1;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+}
+.catalog-controls__search button,
+.catalog-sort button {
+  border: 0;
+  background: transparent;
+  padding: 0 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.catalog-controls__group { display: flex; align-items: center; gap: 8px; }
+.catalog-filter { position: relative; }
+.catalog-filter summary,
+.catalog-filter-button {
+  list-style: none;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #d7d7d2;
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.catalog-filter summary::-webkit-details-marker { display: none; }
+.catalog-filter summary::after { content: "＋"; margin-left: 12px; font-size: 12px; }
+.catalog-filter[open] summary::after { content: "−"; }
+.catalog-filter-button.is-active { background: #111; color: #fff; border-color: #111; }
+.catalog-filter__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  width: 270px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(0,0,0,.08);
+}
+.catalog-filter__menu a {
+  padding: 10px 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+}
+.catalog-filter__menu a:hover,
+.catalog-filter__menu a.is-active { background: #f4f4f0; }
+.catalog-filter__menu a span:last-child { color: #888; }
+
+.catalog-sort { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.catalog-sort label { color: #777; }
+.catalog-sort select {
+  height: 38px;
+  border: 0;
+  background: transparent;
+  font-weight: 650;
+  outline: none;
+}
+.catalog-sort button { display: none; }
+
+.catalog-results {
+  width: min(1440px, 100%);
+  min-height: 50vh;
+  margin: 0 auto;
+  padding: 46px 28px 110px;
+}
+.catalog-empty {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+.catalog-empty h2 { margin: 0; font-size: 34px; letter-spacing: -.04em; }
+.catalog-empty p { margin: 12px 0 0; color: #777; }
+
+@media (max-width: 1024px) {
+  .catalog-controls { top: 68px; grid-template-columns: 1fr auto; }
+  .catalog-controls__search { grid-column: 1 / -1; }
+}
+
+@media (max-width: 720px) {
+  .catalog-head { padding: 46px 16px 22px; }
+  .catalog-head h1 { font-size: 48px; }
+  .catalog-head__row { align-items: start; }
+  .catalog-head__row p { margin-top: 8px; white-space: nowrap; }
+  .catalog-controls {
+    top: 64px;
+    padding: 10px 16px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .catalog-controls__search { grid-column: auto; }
+  .catalog-controls__group { overflow-x: auto; padding-bottom: 2px; }
+  .catalog-sort { justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; }
+  .catalog-sort select { flex: 1; text-align: right; }
+  .catalog-sort button { display: inline; }
+  .catalog-results { padding: 34px 16px 72px; }
+  .catalog-filter__menu { position: fixed; left: 16px; right: 16px; top: auto; bottom: 16px; width: auto; max-height: 55vh; overflow: auto; }
+}

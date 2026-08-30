@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireSuperAdmin } from "@/lib/auth";
 
 function money(cents: number) {
@@ -49,7 +50,7 @@ export default async function OrdersPage() {
                 <tr key={order.id} className="border-b border-black/5 last:border-0">
                   <td className="py-4 pr-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold">{order.order_number}</span>
+                      <Link href={`/admin/orders/${order.id}`} className="font-bold underline">{order.order_number}</Link>
                       {isTest ? <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-900">Test</span> : null}
                     </div>
                   </td>

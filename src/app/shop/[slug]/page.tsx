@@ -55,8 +55,8 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
   const [{ data: products }, themeResult, sectionsResult] = await Promise.all([
     supabase.rpc("get_public_store_products", { target_store_id: store.id }),
-    (supabase.rpc as any)("get_public_store_theme", { target_store_id: store.id }),
-    (supabase.rpc as any)("get_public_store_sections", { target_store_id: store.id }),
+    supabase.rpc("get_public_store_theme", { target_store_id: store.id }),
+    supabase.rpc("get_public_store_sections", { target_store_id: store.id }),
   ]);
 
   const theme = themeResult.data?.[0] as PublicTheme | undefined;
@@ -65,7 +65,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
   const mediaPairs = await Promise.all(
     productRows.map(async (product) => {
-      const result = await (supabase.rpc as any)("get_public_product_media", { target_product_id: product.id });
+      const result = await supabase.rpc("get_public_product_media", { target_product_id: product.id });
       const media = (result.data || []) as PublicMedia[];
       const primary = media.find((item) => item.is_primary && item.media_type === "image") ?? media.find((item) => item.media_type === "image");
       let url: string | null = null;

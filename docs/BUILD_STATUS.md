@@ -49,3 +49,29 @@ Create a Stripe **test-mode** webhook endpoint for `/api/stripe/webhook`. Subscr
 
 ## Recommended next implementation task (do not begin yet)
 Exercise authentication and the deployed RLS policies with a test matrix (anonymous, organization member/admin, another tenant, and super admin), then begin the organization/store/product CRUD milestone with server-validated tenant scoping.
+
+
+## Storefront blueprint redesign checkpoint (2026-08-30)
+Branch: `storefront-blueprint-v1`
+
+Implemented the first visual storefront slice against the new Supabase merchandising contracts:
+- Replaced the legacy storefront homepage shell with the approved editorial-commerce structure.
+- Added a sticky commerce header with desktop navigation, mobile full-screen menu, Search entry, and cart count.
+- Added reusable 4:5 product cards with restrained metadata, optional New badge, secondary-image hover behavior, and 4/3/2 responsive grids.
+- Rebuilt the homepage around Hero -> New/Featured products -> Category grid -> Featured collection -> Story.
+- Added a dedicated `/shop/[slug]/catalog` route with search, result count, category filter, in-stock filter, and approved sort modes.
+- Rebuilt the PDP around the 60/40 gallery/purchase layout.
+- Removed automatic first-option selection. Customers must explicitly select required Size and Color values.
+- Added unavailable Size/Color disabling based on sellable combinations.
+- Added the cart drawer interaction and extended cart state to preserve selected Size, Color, image, and sellable combination ID.
+- Refreshed generated Supabase TypeScript types from the live project.
+- Kept production/main untouched; all redesign work is isolated on the preview branch.
+- Latest Vercel preview build passes.
+
+Next storefront work:
+1. Finish mobile filter sheet behavior and applied-filter chips.
+2. Add Collections index/detail pages and connect navigation.
+3. Complete dynamic color-to-gallery switching on PDP.
+4. Connect the cart/checkout UI to the new checkout-intent Edge Function.
+5. Replace legacy full cart page presentation with the revised checkout handoff.
+6. Run accessibility, responsive, and visual QA before merging the branch.

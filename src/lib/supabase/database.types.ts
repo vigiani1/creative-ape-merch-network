@@ -1098,6 +1098,47 @@ export type Database = {
           },
         ]
       }
+      product_template_color_options: {
+        Row: {
+          active: boolean
+          color_name: string
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string | null
+          product_template_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color_name: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          product_template_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color_name?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          product_template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_template_color_options_product_template_id_fkey"
+            columns: ["product_template_id"]
+            isOneToOne: false
+            referencedRelation: "product_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_template_variants: {
         Row: {
           availability_status: string
@@ -1189,8 +1230,10 @@ export type Database = {
           custom_data: Json
           description: string | null
           finished_sale_price: number
+          gallery_urls: string[]
           id: string
           name: string
+          primary_image_url: string | null
           production_material_cost: number
           profit_each: number | null
           sku_prefix: string | null
@@ -1208,8 +1251,10 @@ export type Database = {
           custom_data?: Json
           description?: string | null
           finished_sale_price?: number
+          gallery_urls?: string[]
           id?: string
           name: string
+          primary_image_url?: string | null
           production_material_cost?: number
           profit_each?: number | null
           sku_prefix?: string | null
@@ -1227,8 +1272,10 @@ export type Database = {
           custom_data?: Json
           description?: string | null
           finished_sale_price?: number
+          gallery_urls?: string[]
           id?: string
           name?: string
+          primary_image_url?: string | null
           production_material_cost?: number
           profit_each?: number | null
           sku_prefix?: string | null

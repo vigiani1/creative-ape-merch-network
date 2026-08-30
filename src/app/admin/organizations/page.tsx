@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createOrganization } from "./actions";
 import { requireSuperAdmin } from "@/lib/auth";
 
@@ -33,7 +34,8 @@ export default async function OrganizationsPage() {
                 <th className="py-3 pr-4 font-semibold">Type</th>
                 <th className="py-3 pr-4 font-semibold">Status</th>
                 <th className="py-3 pr-4 font-semibold">Default share</th>
-                <th className="py-3 font-semibold">Store slug base</th>
+                <th className="py-3 pr-4 font-semibold">Store slug base</th>
+                <th className="py-3 font-semibold">Manage</th>
               </tr>
             </thead>
             <tbody>
@@ -48,12 +50,13 @@ export default async function OrganizationsPage() {
                     <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{org.status}</span>
                   </td>
                   <td className="py-4 pr-4">{Number(org.default_revenue_share_rate)}%</td>
-                  <td className="py-4 font-mono text-xs text-black/55">{org.slug}</td>
+                  <td className="py-4 pr-4 font-mono text-xs text-black/55">{org.slug}</td>
+                  <td className="py-4"><Link href={`/admin/organizations/${org.id}`} className="font-semibold underline">Edit</Link></td>
                 </tr>
               ))}
               {!organizations?.length && (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-black/45">No organizations yet.</td>
+                  <td colSpan={6} className="py-10 text-center text-black/45">No organizations yet.</td>
                 </tr>
               )}
             </tbody>

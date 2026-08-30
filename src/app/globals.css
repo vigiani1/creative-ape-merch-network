@@ -3324,3 +3324,207 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 }
+
+
+.admin-page-editor-home {
+  padding: 22px;
+  border: 1px solid #deded9;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.admin-page-editor-home h3 {
+  margin: 7px 0 0;
+  font-size: 30px;
+  letter-spacing: -.04em;
+}
+.admin-page-editor-home p:last-child {
+  max-width: 620px;
+  margin: 9px 0 0;
+  color: rgba(255,255,255,.6);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.admin-page-editor-home__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.admin-page-editor-home .admin-primary-action {
+  background: #fff;
+  color: #111;
+}
+.admin-page-editor-home .admin-secondary-action {
+  border-color: rgba(255,255,255,.3);
+  color: #fff;
+}
+.admin-page-editor-list { display: grid; }
+.admin-page-editor-item {
+  border-bottom: 1px solid #ecece7;
+}
+.admin-page-editor-item:last-child { border-bottom: 0; }
+.admin-page-editor-item summary {
+  min-height: 72px;
+  padding: 14px 22px;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  cursor: pointer;
+}
+.admin-page-editor-item summary::-webkit-details-marker { display:none; }
+.admin-page-editor-item summary > div {
+  display: grid;
+  gap: 4px;
+}
+.admin-page-editor-item summary > div:last-child {
+  justify-items: end;
+}
+.admin-page-editor-item summary strong { font-size: 13px; }
+.admin-page-editor-item summary span {
+  color: #777;
+  font-size: 10px;
+}
+.admin-page-editor-item__body {
+  border-top: 1px solid #ecece7;
+  background: #fafaf7;
+}
+.admin-page-editor-form,
+.admin-page-create-form {
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+.admin-page-editor-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-page-editor-actions .admin-primary-action,
+.admin-page-create-form .admin-primary-action {
+  border: 0;
+  cursor: pointer;
+}
+.admin-page-create-form .admin-primary-action {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.admin-danger-zone {
+  padding: 14px 22px;
+  border-top: 1px solid #ead2d2;
+  background: #fff4f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.admin-danger-zone > div {
+  display: grid;
+  gap: 4px;
+}
+.admin-danger-zone strong {
+  color: #8a2020;
+  font-size: 11px;
+}
+.admin-danger-zone span {
+  color: #8f6262;
+  font-size: 10px;
+}
+.admin-danger-zone button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #ba6a6a;
+  background: #fff;
+  color: #8a2020;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-store-design-form {
+  display: grid;
+  gap: 18px;
+}
+.admin-brand-media-grid {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 22px;
+}
+.admin-brand-media-grid > div {
+  min-width: 0;
+}
+.admin-brand-media-grid > div > strong {
+  font-size: 12px;
+}
+.admin-brand-media-grid > div > p {
+  margin: 5px 0 12px;
+  color: #777;
+  font-size: 10px;
+}
+.admin-color-editor-grid {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 10px;
+}
+.admin-color-editor {
+  min-height: 126px;
+  padding: 12px;
+  border: 1px solid #deded9;
+  background: #fafaf7;
+  display: grid;
+  gap: 8px;
+}
+.admin-color-editor > span {
+  color: #777;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.admin-color-editor input[type="color"] {
+  width: 100%;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.admin-color-editor strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+}
+.admin-store-design-fields {
+  padding: 22px;
+}
+.admin-muted {
+  color: #777;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .admin-color-editor-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 720px) {
+  .admin-page-editor-home {
+    display: grid;
+    align-items: start;
+  }
+  .admin-page-editor-form,
+  .admin-page-create-form,
+  .admin-brand-media-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-color-editor-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .admin-danger-zone {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

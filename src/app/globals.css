@@ -2987,3 +2987,264 @@ button:disabled,
   color: #667;
   font-size: 11px;
 }
+
+
+.admin-settings-detail {
+  border: 1px solid #deded9;
+  background: #fff;
+}
+.admin-settings-detail__head {
+  padding: 20px 22px;
+  border-bottom: 1px solid #ecece7;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.admin-settings-detail__head h3 {
+  margin: 6px 0 0;
+  font-size: 24px;
+  letter-spacing: -.035em;
+}
+.admin-settings-detail__head p:last-child {
+  margin: 6px 0 0;
+  color: #777;
+  font-size: 12px;
+}
+
+.admin-domain-list,
+.admin-domain-admin-list,
+.admin-payout-admin-list {
+  display: grid;
+}
+.admin-domain-row,
+.admin-domain-admin-row,
+.admin-payout-admin-row {
+  padding: 18px 22px;
+  border-bottom: 1px solid #ecece7;
+}
+.admin-domain-row:last-child,
+.admin-domain-admin-row:last-child,
+.admin-payout-admin-row:last-child {
+  border-bottom: 0;
+}
+.admin-domain-row {
+  display: grid;
+  gap: 16px;
+}
+.admin-domain-row > div:first-child,
+.admin-domain-current {
+  display: grid;
+  gap: 4px;
+}
+.admin-domain-row strong,
+.admin-domain-admin-row strong,
+.admin-payout-admin-row strong {
+  font-size: 12px;
+}
+.admin-domain-row span,
+.admin-domain-admin-row span,
+.admin-payout-admin-row span,
+.admin-domain-current small,
+.admin-payout-admin-row small {
+  color: #777;
+  font-size: 10px;
+}
+.admin-domain-current {
+  padding: 12px;
+  background: #fafaf7;
+  border: 1px solid #e6e6e1;
+}
+.admin-domain-current .admin-status {
+  justify-self: start;
+}
+.admin-domain-form {
+  display: grid;
+  grid-template-columns: minmax(240px,1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+.admin-domain-form .admin-primary-action {
+  border: 0;
+  cursor: pointer;
+}
+.admin-settings-org-switcher {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-settings-org-switcher a {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #deded9;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.admin-settings-org-switcher a.is-active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.admin-security-note {
+  margin: 20px 22px 0;
+  padding: 16px;
+  border: 1px solid #d8d8d3;
+  background: #fafaf7;
+}
+.admin-security-note strong { font-size: 12px; }
+.admin-security-note p {
+  margin: 6px 0 0;
+  color: #666;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.admin-payout-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-payout-methods {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+}
+.admin-payout-card {
+  padding: 16px;
+  border: 1px solid #deded9;
+  background: #fafaf7;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.admin-payout-card h4 {
+  margin: 5px 0 0;
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+.admin-payout-card .admin-primary-action {
+  border: 0;
+  justify-self: start;
+  cursor: pointer;
+}
+
+.admin-domain-admin-row {
+  display: grid;
+  grid-template-columns: 1fr auto minmax(420px,1.5fr);
+  gap: 16px;
+  align-items: center;
+}
+.admin-domain-admin-row > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+.admin-domain-status-form {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  gap: 8px;
+}
+.admin-domain-status-form select,
+.admin-domain-status-form input {
+  min-height: 38px;
+  border: 1px solid #d9d9d3;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 11px;
+}
+.admin-domain-status-form button {
+  border: 0;
+  background: #111;
+  color: #fff;
+  padding: 0 12px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-payout-admin-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+}
+.admin-payout-admin-row > div {
+  display: grid;
+  gap: 4px;
+}
+.admin-payout-admin-row .admin-secondary-action {
+  white-space: nowrap;
+}
+
+.admin-sensitive-warning {
+  padding: 16px 18px;
+  border: 1px solid #d1b979;
+  background: #fff8df;
+}
+.admin-sensitive-warning strong {
+  font-size: 12px;
+}
+.admin-sensitive-warning p {
+  margin: 5px 0 0;
+  color: #745d24;
+  font-size: 11px;
+}
+.admin-sensitive-card {
+  border: 1px solid #deded9;
+  background: #fff;
+}
+.admin-sensitive-card__head {
+  padding: 20px 22px;
+  border-bottom: 1px solid #ecece7;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
+.admin-sensitive-card__head h3 {
+  margin: 6px 0 0;
+  font-size: 22px;
+}
+.admin-sensitive-card dl {
+  margin: 0;
+  padding: 8px 22px 18px;
+}
+.admin-sensitive-card dl > div {
+  min-height: 54px;
+  border-bottom: 1px solid #ecece7;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.admin-sensitive-card dl > div:last-child { border-bottom: 0; }
+.admin-sensitive-card dt {
+  color: #777;
+  font-size: 11px;
+}
+.admin-sensitive-card dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+@media (max-width: 980px) {
+  .admin-payout-methods { grid-template-columns: 1fr; }
+  .admin-domain-admin-row { grid-template-columns: 1fr; }
+  .admin-domain-status-form { grid-template-columns: 1fr 1fr auto; }
+}
+
+@media (max-width: 640px) {
+  .admin-settings-detail__head {
+    display: grid;
+    align-items: start;
+  }
+  .admin-domain-form { grid-template-columns: 1fr; }
+  .admin-domain-status-form { grid-template-columns: 1fr; }
+  .admin-payout-admin-row { grid-template-columns: 1fr; }
+  .admin-sensitive-card dl > div { grid-template-columns: 1fr; padding: 10px 0; }
+}

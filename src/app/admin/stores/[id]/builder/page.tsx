@@ -31,13 +31,20 @@ export default async function StoreBuilderPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: store, error: storeError }, { data: sections, error: sectionError }] = await Promise.all([
-    supabase.from("stores").select("id,name,slug,status").eq("id", id).maybeSingle(),
+  const { data: store, error: storeError } = await supabase.from("stores").select("id,name,slug,status,organization_id").eq("id", id).maybeSingle();
+  if (storeError || !store) notFound();
+
+  const [{ data: sections, error: sectionError }, { data: assets, error: assetError }] = await Promise.all([
     supabase.from("store_sections").select("id,section_type,position,is_enabled,settings").eq("store_id", id).order("position"),
+    supabase.from("media_assets").select("id,title,file_name,storage_path,scope,organization_id").or(`scope.eq.master,organization_id.eq.${store.organization_id}`).order("created_at",{ascending:false}),
   ]);
 
-  if (storeError || !store) notFound();
-  if (sectionError) throw new Error("Unable to load store sections.");
+  if (sectionError || assetError) throw new Error("Unable to load store builder.");
+  const mediaUrls=(assets ?? []).map((asset)=>({
+    id:asset.id,
+    label:asset.title || asset.file_name,
+    url:supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -50,6 +57,8 @@ export default async function StoreBuilderPage({ params }: { params: Promise<{ i
         </div>
         {store.status === "published" ? <Link href={`/shop/${store.slug}`} target="_blank" className="rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Preview storefront</Link> : null}
       </div>
+
+      <datalist id="home-media-library-urls">{mediaUrls.map((asset)=><option key={asset.id} value={asset.url}>{asset.label}</option>)}</datalist>
 
       <div className="mt-8 grid gap-5">
         {(sections ?? []).map((section) => (
@@ -88,14 +97,32 @@ export default async function StoreBuilderPage({ params }: { params: Promise<{ i
                 <textarea name="body" rows={4} maxLength={3000} defaultValue={settingsValue(section.settings, "body")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold">Image URL
-                <input name="imageUrl" maxLength={1000} defaultValue={settingsValue(section.settings, "image_url")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Optional image URL" />
+              <label className="grid gap-2 text-sm font-semibold">Image / background media
+                <input list="home-media-library-urls" name="imageUrl" maxLength={1000} defaultValue={settingsValue(section.settings, "image_url")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Optional image URL" />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold">Video URL
-                <input name="videoUrl" maxLength={1000} defaultValue={settingsValue(section.settings, "video_url")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Optional video URL" />
+              <label className="grid gap-2 text-sm font-semibold">Video media
+                <input list="home-media-library-urls" name="videoUrl" maxLength={1000} defaultValue={settingsValue(section.settings, "video_url")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Optional video URL" />
               </label>
 
+              <label className="grid gap-2 text-sm font-semibold">Button label
+                <input name="buttonLabel" maxLength={80} defaultValue={settingsValue(section.settings, "button_label")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">Button URL
+                <input name="buttonUrl" maxLength={1000} defaultValue={settingsValue(section.settings, "button_url")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">Button shape
+                <select name="buttonShape" defaultValue={settingsValue(section.settings, "button_shape") || "rounded"} className="rounded-xl border border-black/15 px-4 py-3 font-normal"><option value="rounded">Rounded</option><option value="pill">Pill</option><option value="square">Square</option></select>
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">Alignment
+                <select name="align" defaultValue={settingsValue(section.settings, "align") || "left"} className="rounded-xl border border-black/15 px-4 py-3 font-normal"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">Featured product count
+                <input name="featuredCount" type="number" min="1" max="24" defaultValue={settingsValue(section.settings, "featured_count")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">Minimum section height px
+                <input name="minHeight" type="number" min="120" max="1200" defaultValue={settingsValue(section.settings, "min_height")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+              </label>
               <label className="grid gap-2 text-sm font-semibold md:col-span-2">Items
                 <textarea name="items" rows={4} maxLength={5000} defaultValue={settingsValue(section.settings, "items")} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="One item per line for sponsors, social links, FAQs, etc." />
               </label>
@@ -140,6 +167,12 @@ export default async function StoreBuilderPage({ params }: { params: Promise<{ i
           <label className="grid gap-2 text-sm font-semibold md:col-span-2">Body<textarea name="body" rows={4} maxLength={3000} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
           <label className="grid gap-2 text-sm font-semibold">Image URL<input name="imageUrl" maxLength={1000} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
           <label className="grid gap-2 text-sm font-semibold">Video URL<input name="videoUrl" maxLength={1000} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Button label<input name="buttonLabel" maxLength={80} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Button URL<input name="buttonUrl" maxLength={1000} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Button shape<select name="buttonShape" defaultValue="rounded" className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal"><option value="rounded">Rounded</option><option value="pill">Pill</option><option value="square">Square</option></select></label>
+          <label className="grid gap-2 text-sm font-semibold">Alignment<select name="align" defaultValue="left" className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
+          <label className="grid gap-2 text-sm font-semibold">Featured product count<input name="featuredCount" type="number" min="1" max="24" className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Minimum section height px<input name="minHeight" type="number" min="120" max="1200" className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
           <label className="grid gap-2 text-sm font-semibold md:col-span-2">Items<textarea name="items" rows={4} maxLength={5000} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" placeholder="One item per line" /></label>
         </div>
 

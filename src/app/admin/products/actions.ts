@@ -82,7 +82,7 @@ export async function createProduct(formData: FormData) {
   const sizes = [...new Set((input.sizes ?? "").split(",").map((value) => value.trim()).filter(Boolean))];
   if (sizes.length) {
     const { error: variantError } = await supabase.from("product_variants").insert(
-      sizes.map((size, index) => ({
+      sizes.map((size) => ({
         organization_id: store.organization_id,
         product_id: product.id,
         size,

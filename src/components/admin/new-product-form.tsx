@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { createMerchandisingProduct } from "@/app/admin/products/new/actions";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 type Setup = {
   organizations?: Array<{ id: string; name: string }>;
@@ -100,6 +101,24 @@ export function NewProductForm({ setup }: { setup: Setup }) {
         <div className="admin-editor-section__head">
           <span>03</span>
           <div>
+            <h3>Media</h3>
+            <p>Upload the main product image now. You can add more images later.</p>
+          </div>
+        </div>
+        <div className="admin-editor-fields">
+          <ImageUploader
+            organizationId={organizationId}
+            urlInputName="productImageUrl"
+            assetIdInputName="productImageAssetId"
+            label="Upload Product Image"
+          />
+        </div>
+      </section>
+
+      <section className="admin-editor-section">
+        <div className="admin-editor-section__head">
+          <span>04</span>
+          <div>
             <h3>Size</h3>
             <p>Select every size offered for this product.</p>
           </div>
@@ -117,7 +136,7 @@ export function NewProductForm({ setup }: { setup: Setup }) {
 
       <section className="admin-editor-section">
         <div className="admin-editor-section__head">
-          <span>04</span>
+          <span>05</span>
           <div>
             <h3>Color</h3>
             <p>Add the colors customers can choose from.</p>
@@ -171,7 +190,7 @@ export function NewProductForm({ setup }: { setup: Setup }) {
 
       <section className="admin-editor-section">
         <div className="admin-editor-section__head">
-          <span>05</span>
+          <span>06</span>
           <div>
             <h3>Organization & Store</h3>
             <p>Choose where this product belongs and where it will be sold.</p>
@@ -214,7 +233,7 @@ export function NewProductForm({ setup }: { setup: Setup }) {
 
       <section className="admin-editor-section">
         <div className="admin-editor-section__head">
-          <span>06</span>
+          <span>07</span>
           <div>
             <h3>Publishing</h3>
             <p>Save as a draft or make it available immediately.</p>

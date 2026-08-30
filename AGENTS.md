@@ -1,20 +1,28 @@
-# AGENTS.md
+# Creative Ape Merch Network agent guide
 
-Before making code changes, read README.md and the docs/ project files once they exist.
+Before changing code, read these files in order:
+1. README.md
+2. docs/PRODUCT_SPEC.md
+3. docs/ARCHITECTURE.md
+4. docs/DATABASE.md
+5. docs/SECURITY.md
+6. docs/ROADMAP.md
+7. docs/BUILD_STATUS.md
 
 Non-negotiables:
-1. Preserve multi-tenant isolation.
-2. Use Supabase RLS for tenant data access.
-3. Never expose service-role or Stripe secret keys to the browser.
-4. Snapshot financial values on order items so history does not change when product pricing or commission rules change.
-5. Treat Stripe webhooks as authoritative for payment completion and make webhook handling idempotent.
-6. Keep Creative Ape internal production costs hidden from organization users.
-7. Do not create paid resources or commit secrets.
-8. Keep modules maintainable and avoid giant monolithic files.
+- Preserve multi-tenant isolation.
+- Use Supabase RLS for tenant-owned data.
+- Never expose service-role or Stripe secret keys to the browser.
+- Snapshot financial values on order items so historical results never change when product pricing or revenue-share rules change.
+- Treat Stripe webhooks as authoritative for payment completion and make webhook processing idempotent.
+- Keep Creative Ape internal production costs and margins hidden from organization users.
+- Do not create paid resources or commit secrets.
+- Prefer small maintainable modules over monolithic files.
+- Public routes may only expose explicitly published store/product data.
 
-Before considering a development task complete:
-- run lint
-- run type checking
-- run the production build
+Before a development task is considered complete:
+- run `npm run lint`
+- run `npm run typecheck`
+- run `npm run build`
 - fix failures where possible
 - update docs/BUILD_STATUS.md

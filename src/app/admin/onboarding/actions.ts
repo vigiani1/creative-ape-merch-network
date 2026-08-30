@@ -24,6 +24,7 @@ const NewMasterProduct = z.object({
   productionMaterialPrice: z.coerce.number().min(0).max(100000),
   finishedSalePrice: z.coerce.number().min(0).max(100000),
   variantsJson: z.string(),
+  customDataJson: z.string(),
   saveMode: z.enum(["library_only", "add_to_store"]),
   storeId: z.string().uuid().optional(),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120).optional(),
@@ -49,6 +50,7 @@ export async function createMasterVendorProduct(formData: FormData) {
     productionMaterialPrice: formData.get("productionMaterialPrice"),
     finishedSalePrice: formData.get("finishedSalePrice"),
     variantsJson: String(formData.get("variantsJson") ?? "[]"),
+    customDataJson: String(formData.get("customDataJson") ?? "{}"),
     saveMode: formData.get("saveMode"),
     storeId: String(formData.get("storeId") ?? "") || undefined,
     slug: String(formData.get("slug") ?? "") || undefined,
@@ -58,12 +60,16 @@ export async function createMasterVendorProduct(formData: FormData) {
   });
 
   const parsedJson: unknown = JSON.parse(input.variantsJson);
+  const parsedCustomData: unknown = JSON.parse(input.customDataJson);
+  if (!parsedCustomData || typeof parsedCustomData !== "object" || Array.isArray(parsedCustomData)) throw new Error("Invalid category product data.");
+  const rawCustomData = parsedCustomData as Record<string, unknown>;
   const variants = z.array(VariantRow).max(500).parse(parsedJson).filter((row) =>
     Boolean(row.variantGroup || row.size || row.color || row.skuSuffix || row.vendorPartNumber)
   );
 
-  const [{ data: category, error: categoryError }, { data: existing, error: existingError }] = await Promise.all([
+  const [{ data: category, error: categoryError }, { data: fieldDefinitions, error: fieldsError }, { data: existing, error: existingError }] = await Promise.all([
     supabase.from("product_categories").select("id,name").eq("id", input.categoryId).eq("active", true).single(),
+    supabase.from("product_category_fields").select("field_key,field_type,required,hidden,options").eq("category_id", input.categoryId),
     supabase
       .from("product_templates")
       .select("id,name")
@@ -73,8 +79,32 @@ export async function createMasterVendorProduct(formData: FormData) {
   ]);
 
   if (categoryError || !category) throw new Error("Product category not found.");
+  if (fieldsError) throw new Error("Unable to load category field rules.");
   if (existingError) throw new Error("Unable to check the vendor product catalog.");
   if (existing) throw new Error(`That vendor part number is already saved as ${existing.name}. Select it from the saved product dropdown instead.`);
+
+  const customData: Record<string, string | number | boolean> = {};
+  for (const field of fieldDefinitions ?? []) {
+    if (field.hidden) continue;
+    const value = rawCustomData[field.field_key];
+    const empty = value === undefined || value === null || value === "";
+    if (field.required && empty) throw new Error(`${field.field_key.replaceAll("_"," ")} is required.`);
+    if (empty) continue;
+
+    if (field.field_type === "boolean") {
+      customData[field.field_key] = value === true || value === "true";
+    } else if (field.field_type === "number") {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) throw new Error(`${field.field_key.replaceAll("_"," ")} must be a number.`);
+      customData[field.field_key] = numeric;
+    } else {
+      const text = String(value).trim();
+      if (field.field_type === "select" && field.options.length && !field.options.includes(text)) {
+        throw new Error(`Invalid option for ${field.field_key.replaceAll("_"," ")}.`);
+      }
+      customData[field.field_key] = text;
+    }
+  }
 
   const { data: template, error: templateError } = await supabase
     .from("product_templates")
@@ -90,6 +120,7 @@ export async function createMasterVendorProduct(formData: FormData) {
       production_material_cost: cents(input.productionMaterialPrice),
       finished_sale_price: cents(input.finishedSalePrice),
       base_production_cost: cents(input.blankProductPrice + input.productionMaterialPrice),
+      custom_data: customData,
       active: true,
     })
     .select("id")
@@ -156,6 +187,7 @@ export async function createMasterVendorProduct(formData: FormData) {
       featured: input.featured,
       vendor_id: input.vendorId,
       vendor_part_number: input.vendorPartNumber,
+      custom_overrides: {},
     })
     .select("id")
     .single();

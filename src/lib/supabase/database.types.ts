@@ -924,6 +924,68 @@ export type Database = {
         }
         Relationships: []
       }
+      product_category_fields: {
+        Row: {
+          admin_only: boolean
+          category_id: string
+          created_at: string
+          display_order: number
+          field_group: string
+          field_key: string
+          field_type: string
+          help_text: string | null
+          hidden: boolean
+          id: string
+          label: string
+          options: string[]
+          placeholder: string | null
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          admin_only?: boolean
+          category_id: string
+          created_at?: string
+          display_order?: number
+          field_group?: string
+          field_key: string
+          field_type?: string
+          help_text?: string | null
+          hidden?: boolean
+          id?: string
+          label: string
+          options?: string[]
+          placeholder?: string | null
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          admin_only?: boolean
+          category_id?: string
+          created_at?: string
+          display_order?: number
+          field_group?: string
+          field_key?: string
+          field_type?: string
+          help_text?: string | null
+          hidden?: boolean
+          id?: string
+          label?: string
+          options?: string[]
+          placeholder?: string | null
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_category_fields_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_media: {
         Row: {
           alt_text: string | null
@@ -1073,6 +1135,7 @@ export type Database = {
           category: string | null
           category_id: string | null
           created_at: string
+          custom_data: Json
           description: string | null
           finished_sale_price: number
           id: string
@@ -1091,6 +1154,7 @@ export type Database = {
           category?: string | null
           category_id?: string | null
           created_at?: string
+          custom_data?: Json
           description?: string | null
           finished_sale_price?: number
           id?: string
@@ -1109,6 +1173,7 @@ export type Database = {
           category?: string | null
           category_id?: string | null
           created_at?: string
+          custom_data?: Json
           description?: string | null
           finished_sale_price?: number
           id?: string
@@ -1241,6 +1306,7 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          custom_overrides: Json
           default_revenue_share_rate: number | null
           description: string | null
           featured: boolean
@@ -1262,6 +1328,7 @@ export type Database = {
         Insert: {
           category?: string | null
           created_at?: string
+          custom_overrides?: Json
           default_revenue_share_rate?: number | null
           description?: string | null
           featured?: boolean
@@ -1283,6 +1350,7 @@ export type Database = {
         Update: {
           category?: string | null
           created_at?: string
+          custom_overrides?: Json
           default_revenue_share_rate?: number | null
           description?: string | null
           featured?: boolean

@@ -699,38 +699,71 @@ export type Database = {
         Row: {
           availability_status: string
           color: string | null
+          compressible: boolean
           created_at: string
+          height_in: number | null
           id: string
+          length_in: number | null
+          packaging_class: string | null
           price_override: number | null
           product_template_id: string
           production_cost_override: number | null
+          ships_alone: boolean
+          show_on_card: boolean
           size: string | null
           sku_suffix: string | null
+          stackable: boolean
           updated_at: string
+          variant_group: string | null
+          vendor_part_number: string | null
+          weight_oz: number | null
+          width_in: number | null
         }
         Insert: {
           availability_status?: string
           color?: string | null
+          compressible?: boolean
           created_at?: string
+          height_in?: number | null
           id?: string
+          length_in?: number | null
+          packaging_class?: string | null
           price_override?: number | null
           product_template_id: string
           production_cost_override?: number | null
+          ships_alone?: boolean
+          show_on_card?: boolean
           size?: string | null
           sku_suffix?: string | null
+          stackable?: boolean
           updated_at?: string
+          variant_group?: string | null
+          vendor_part_number?: string | null
+          weight_oz?: number | null
+          width_in?: number | null
         }
         Update: {
           availability_status?: string
           color?: string | null
+          compressible?: boolean
           created_at?: string
+          height_in?: number | null
           id?: string
+          length_in?: number | null
+          packaging_class?: string | null
           price_override?: number | null
           product_template_id?: string
           production_cost_override?: number | null
+          ships_alone?: boolean
+          show_on_card?: boolean
           size?: string | null
           sku_suffix?: string | null
+          stackable?: boolean
           updated_at?: string
+          variant_group?: string | null
+          vendor_part_number?: string | null
+          weight_oz?: number | null
+          width_in?: number | null
         }
         Relationships: [
           {
@@ -753,6 +786,8 @@ export type Database = {
           name: string
           sku_prefix: string | null
           updated_at: string
+          vendor_id: string | null
+          vendor_part_number: string | null
         }
         Insert: {
           active?: boolean
@@ -764,6 +799,8 @@ export type Database = {
           name: string
           sku_prefix?: string | null
           updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
         }
         Update: {
           active?: boolean
@@ -775,51 +812,94 @@ export type Database = {
           name?: string
           sku_prefix?: string | null
           updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_templates_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_variants: {
         Row: {
           availability_status: string
           color: string | null
+          compressible: boolean
           created_at: string
+          height_in: number | null
           id: string
           inventory_quantity: number | null
+          length_in: number | null
           organization_id: string
+          packaging_class: string | null
           price_override: number | null
           product_id: string
           production_cost_override: number | null
+          ships_alone: boolean
+          show_on_card: boolean
           size: string | null
           sku: string | null
+          stackable: boolean
           updated_at: string
+          variant_group: string | null
+          vendor_part_number: string | null
+          weight_oz: number | null
+          width_in: number | null
         }
         Insert: {
           availability_status?: string
           color?: string | null
+          compressible?: boolean
           created_at?: string
+          height_in?: number | null
           id?: string
           inventory_quantity?: number | null
+          length_in?: number | null
           organization_id: string
+          packaging_class?: string | null
           price_override?: number | null
           product_id: string
           production_cost_override?: number | null
+          ships_alone?: boolean
+          show_on_card?: boolean
           size?: string | null
           sku?: string | null
+          stackable?: boolean
           updated_at?: string
+          variant_group?: string | null
+          vendor_part_number?: string | null
+          weight_oz?: number | null
+          width_in?: number | null
         }
         Update: {
           availability_status?: string
           color?: string | null
+          compressible?: boolean
           created_at?: string
+          height_in?: number | null
           id?: string
           inventory_quantity?: number | null
+          length_in?: number | null
           organization_id?: string
+          packaging_class?: string | null
           price_override?: number | null
           product_id?: string
           production_cost_override?: number | null
+          ships_alone?: boolean
+          show_on_card?: boolean
           size?: string | null
           sku?: string | null
+          stackable?: boolean
           updated_at?: string
+          variant_group?: string | null
+          vendor_part_number?: string | null
+          weight_oz?: number | null
+          width_in?: number | null
         }
         Relationships: [
           {
@@ -864,6 +944,8 @@ export type Database = {
           status: string
           store_id: string
           updated_at: string
+          vendor_id: string | null
+          vendor_part_number: string | null
         }
         Insert: {
           category?: string | null
@@ -883,6 +965,8 @@ export type Database = {
           status?: string
           store_id: string
           updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
         }
         Update: {
           category?: string | null
@@ -902,6 +986,8 @@ export type Database = {
           status?: string
           store_id?: string
           updated_at?: string
+          vendor_id?: string | null
+          vendor_part_number?: string | null
         }
         Relationships: [
           {
@@ -931,6 +1017,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1235,6 +1328,66 @@ export type Database = {
           payload_hash?: string | null
           processed_at?: string | null
           stripe_event_id?: string
+        }
+        Relationships: []
+      }
+      vendors: {
+        Row: {
+          account_reference: string | null
+          active: boolean
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          account_reference?: string | null
+          active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          account_reference?: string | null
+          active?: boolean
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

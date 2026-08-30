@@ -70,7 +70,10 @@ export default async function ProductsPage({
           <h2>Products</h2>
           <p>{library?.filters?.count ?? items.length} products across your stores.</p>
         </div>
-        <Link href="/admin/products/new" className="admin-primary-action">Add Product</Link>
+        <div className="admin-page-actions">
+          <Link href="/admin/products/taxonomy" className="admin-secondary-action">Categories & Collections</Link>
+          <Link href="/admin/products/new" className="admin-primary-action">Add Product</Link>
+        </div>
       </section>
 
       <section className="admin-product-toolbar">

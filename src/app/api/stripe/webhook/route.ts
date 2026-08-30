@@ -18,13 +18,12 @@ export async function POST(request: Request) {
       stripe_event_id: event.id,
       event_type: event.type,
       payload_hash: createHash("sha256").update(rawBody).digest("hex"),
-      processed_at: new Date().toISOString(),
+      processed_at: null,
     });
 
     if (error && error.code !== "23505") throw error;
     return NextResponse.json({ received: true });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Webhook processing failed";
-    return NextResponse.json({ error: message }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 400 });
   }
 }

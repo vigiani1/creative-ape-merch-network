@@ -309,6 +309,58 @@ export type Database = {
           },
         ]
       }
+      order_notes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string
+          order_id: string
+          organization_id: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note: string
+          order_id: string
+          organization_id: string
+          visibility: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          order_id?: string
+          organization_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_notes_order_tenant_fk"
+            columns: ["order_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "order_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
@@ -1144,6 +1196,49 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_test_order: {
+        Args: {
+          customer_email: string
+          customer_name: string
+          items: Json
+          shipping_address: Json
+          store_slug: string
+        }
+        Returns: {
+          grand_total: number
+          order_id: string
+          order_number: string
+        }[]
+      }
+      get_member_fulfillment_events: {
+        Args: { target_order_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          notes: string
+          status: string
+        }[]
+      }
+      get_member_order_items: {
+        Args: { target_order_id: string }
+        Returns: {
+          id: string
+          name_snapshot: string
+          organization_share_snapshot: number
+          quantity: number
+          sku_snapshot: string
+          unit_price_snapshot: number
+          variant_snapshot: Json
+        }[]
+      }
+      get_member_order_notes: {
+        Args: { target_order_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          note: string
+        }[]
+      }
       get_public_product: {
         Args: { product_slug: string; target_store_id: string }
         Returns: {
@@ -1152,6 +1247,18 @@ export type Database = {
           name: string
           retail_price: number
           slug: string
+        }[]
+      }
+      get_public_product_media: {
+        Args: { target_product_id: string }
+        Returns: {
+          alt_text: string
+          display_order: number
+          external_url: string
+          id: string
+          is_primary: boolean
+          media_type: string
+          storage_path: string
         }[]
       }
       get_public_product_variants: {
@@ -1186,6 +1293,27 @@ export type Database = {
           slug: string
         }[]
       }
+      get_public_store_sections: {
+        Args: { target_store_id: string }
+        Returns: {
+          id: string
+          section_position: number
+          section_type: string
+          settings: Json
+        }[]
+      }
+      get_public_store_theme: {
+        Args: { target_store_id: string }
+        Returns: {
+          accent_color: string
+          background_color: string
+          hero_image_url: string
+          logo_url: string
+          primary_color: string
+          secondary_color: string
+          text_color: string
+        }[]
+      }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
       is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
@@ -1198,6 +1326,7 @@ export type Database = {
           outstanding_payouts: number
         }[]
       }
+      storage_object_org_id: { Args: { object_name: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

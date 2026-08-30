@@ -2071,6 +2071,19 @@ export type Database = {
           note: string
         }[]
       }
+      get_org_admin_product_option_editor: {
+        Args: { target_product_id: string }
+        Returns: {
+          colors: Json
+          inventory_quantity: number
+          organization_id: string
+          product_id: string
+          product_name: string
+          product_slug: string
+          sizes: Json
+          store_slug: string
+        }[]
+      }
       get_public_product: {
         Args: { product_slug: string; target_store_id: string }
         Returns: {

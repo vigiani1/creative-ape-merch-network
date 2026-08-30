@@ -235,7 +235,7 @@ export async function createStandardCategory(formData: FormData) {
       default_sizes: [] as string[],
       default_colors: [] as string[],
     },
-  } as const;
+  };
 
   const { error } = await supabase.from("product_categories").insert({
     name: input.name,

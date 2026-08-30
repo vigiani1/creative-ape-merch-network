@@ -53,15 +53,17 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
   if (!store) return <main className="mx-auto max-w-5xl p-8"><h1 className="text-3xl font-black">Store not found</h1><p className="mt-3 text-black/60">This storefront is not published or does not exist.</p></main>;
 
-  const [{ data: products }, themeResult, sectionsResult] = await Promise.all([
+  const [{ data: products }, themeResult, sectionsResult, pagesResult] = await Promise.all([
     supabase.rpc("get_public_store_products", { target_store_id: store.id }),
     supabase.rpc("get_public_store_theme", { target_store_id: store.id }),
     supabase.rpc("get_public_store_sections", { target_store_id: store.id }),
+    supabase.rpc("get_public_store_pages", { target_store_id: store.id }),
   ]);
 
   const theme = themeResult.data?.[0] as PublicTheme | undefined;
   const productRows = ((products || []) as PublicProduct[]);
   const sections = ((sectionsResult.data || []) as PublicSection[]);
+  const publicPages = (pagesResult.data || []) as { slug: string; title: string; nav_label: string | null }[];
 
   const mediaPairs = await Promise.all(
     productRows.map(async (product) => {
@@ -118,7 +120,10 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         }}
       >
         <div className="mx-auto max-w-6xl">
-          {theme?.logo_url ? <img src={theme.logo_url} alt="" className="mb-8 h-20 max-w-[240px] object-contain object-left" /> : null}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            {theme?.logo_url ? <img src={theme.logo_url} alt="" className="h-20 max-w-[240px] object-contain object-left" /> : <span />}
+            {publicPages.length ? <nav className="flex flex-wrap gap-4 text-sm font-bold">{publicPages.map((page) => <Link key={page.slug} href={`/shop/${store.slug}/${page.slug}`}>{page.nav_label || page.title}</Link>)}</nav> : null}
+          </div>
           <p className="text-sm font-bold uppercase tracking-[0.2em]">Creative Ape Merch Network</p>
           <h1 className="mt-4 text-5xl font-black">{store.title || store.name}</h1>
           <p className="mt-4 max-w-2xl text-white/80">{store.description}</p>

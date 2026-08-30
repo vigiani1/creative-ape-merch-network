@@ -1899,6 +1899,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_store_layout_template: {
+        Args: { target_store_id: string; target_template_id: string }
+        Returns: undefined
+      }
       create_test_order: {
         Args: {
           customer_email: string

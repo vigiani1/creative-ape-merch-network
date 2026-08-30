@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireSuperAdmin } from "@/lib/auth";
 
@@ -15,6 +16,13 @@ const PageInput = z.object({
   isEnabled: z.boolean(),
   showInNavigation: z.boolean(),
 });
+
+function finish(formData: FormData, fallback: string) {
+  const requested = String(formData.get("returnTo") ?? "").trim() || fallback;
+  const [base, hash] = requested.split("#", 2);
+  const separator = base.includes("?") ? "&" : "?";
+  redirect(`${base}${separator}saved=1${hash ? `#${hash}` : ""}`);
+}
 
 async function getStore(storeId: string) {
   const { supabase } = await requireSuperAdmin();
@@ -49,6 +57,7 @@ export async function createStorePage(formData: FormData) {
   if (error) throw new Error(error.code === "23505" ? "That page slug already exists in this store." : "Unable to create page.");
   revalidatePath(`/admin/stores/${store.id}/pages`);
   revalidatePath(`/shop/${store.slug}`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }
 
 export async function updateStorePage(formData: FormData) {
@@ -78,6 +87,7 @@ export async function updateStorePage(formData: FormData) {
   revalidatePath(`/admin/stores/${store.id}/pages`);
   revalidatePath(`/shop/${store.slug}`);
   revalidatePath(`/shop/${store.slug}/${input.slug}`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }
 
 export async function deleteStorePage(formData: FormData) {
@@ -89,6 +99,7 @@ export async function deleteStorePage(formData: FormData) {
   if (error) throw new Error("Unable to delete page.");
   revalidatePath(`/admin/stores/${store.id}/pages`);
   revalidatePath(`/shop/${store.slug}`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }
 
 const SectionType = z.enum(["hero","featured_products","product_grid","text_image","video","story","sponsors","announcement","socials","faq","buttons","gallery","spacer"]);
@@ -166,6 +177,7 @@ export async function createStorePageSection(formData:FormData) {
   });
   if(error) throw new Error("Unable to create page section.");
   revalidatePath(`/admin/stores/${store.id}/pages`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }
 
 export async function updateStorePageSection(formData:FormData) {
@@ -178,6 +190,7 @@ export async function updateStorePageSection(formData:FormData) {
   }).eq("id",input.sectionId).eq("page_id",input.pageId).eq("store_id",store.id);
   if(error) throw new Error("Unable to update page section.");
   revalidatePath(`/admin/stores/${store.id}/pages`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }
 
 export async function deleteStorePageSection(formData:FormData) {
@@ -188,4 +201,5 @@ export async function deleteStorePageSection(formData:FormData) {
   const { error }=await supabase.from("store_page_sections").delete().eq("id",input.sectionId).eq("page_id",input.pageId).eq("store_id",store.id);
   if(error) throw new Error("Unable to delete page section.");
   revalidatePath(`/admin/stores/${store.id}/pages`);
+  finish(formData, `/admin/stores/${store.id}/pages?store=${store.id}`);
 }

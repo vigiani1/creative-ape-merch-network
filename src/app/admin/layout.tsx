@@ -4,26 +4,26 @@ import { requireSuperAdmin } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const nav = [
-  ["/admin", "Dashboard"],
-  ["/admin/organizations", "Organizations"],
-  ["/admin/stores", "Stores"],
-  ["/admin/layouts", "Store Layouts"],
-  ["/admin/members", "Members"],
-  ["/admin/products", "Products"],
-  ["/admin/onboarding", "Product Onboarding"],
-  ["/admin/library", "Product Library"],
-  ["/admin/templates", "Master Products"],
-  ["/admin/categories", "Product Categories"],
-  ["/admin/vendors", "Vendors"],
-  ["/admin/branding", "Branding"],
-  ["/admin/media", "Media"],
-  ["/admin/orders", "Orders"],
-  ["/admin/fulfillment", "Fulfillment"],
-  ["/admin/reports", "Reports"],
-  ["/admin/settings", "Settings"],
-].map(([href, label]) => ({ href, label }));
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/products", label: "Products" },
+  { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/media", label: "Media" },
+  { href: "/admin/organizations", label: "Organizations" },
+  { href: "/admin/stores", label: "Stores" },
+  { href: "/admin/store-design", label: "Store Design" },
+  { href: "/admin/settings", label: "Settings" },
+];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireSuperAdmin();
-  return <AppShell title="Creative Ape Admin" eyebrow="Merch Network Control Center" nav={nav}>{children}</AppShell>;
+
+  return (
+    <AppShell
+      title="Creative Ape Admin"
+      eyebrow="Merch Network"
+      nav={nav}
+    >
+      {children}
+    </AppShell>
+  );
 }

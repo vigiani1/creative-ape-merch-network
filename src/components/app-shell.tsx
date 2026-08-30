@@ -22,13 +22,13 @@ export function AppShell({
   title,
   eyebrow,
   nav,
-  stores,
+  stores = [],
   children,
 }: {
   title:string;
   eyebrow:string;
   nav:NavItem[];
-  stores:AdminStoreOption[];
+  stores?:AdminStoreOption[];
   children:React.ReactNode;
 }) {
   const pathname=usePathname();
@@ -140,14 +140,18 @@ export function AppShell({
             <h1>{title}</h1>
           </div>
 
-          <div className="admin-store-context">
-            <span>Editing Store</span>
-            <select value={storeId} onChange={(event)=>selectStore(event.target.value)} aria-label="Editing store">
-              <option value="">Select Store</option>
-              {stores.map((store)=><option key={store.id} value={store.id}>{store.name}</option>)}
-            </select>
-            {selectedStore ? <strong>{selectedStore.name}</strong> : <em>Select a store before editing</em>}
-          </div>
+          {pathname.startsWith("/admin") ? (
+            <div className="admin-store-context">
+              <span>Editing Store</span>
+              <select value={storeId} onChange={(event)=>selectStore(event.target.value)} aria-label="Editing store">
+                <option value="">Select Store</option>
+                {stores.map((store)=><option key={store.id} value={store.id}>{store.name}</option>)}
+              </select>
+              {selectedStore ? <strong>{selectedStore.name}</strong> : <em>Select a store before editing</em>}
+            </div>
+          ) : (
+            <div className="admin-topbar__meta"><span>Creative Ape Merch Network</span></div>
+          )}
         </header>
 
         <main className="admin-content">

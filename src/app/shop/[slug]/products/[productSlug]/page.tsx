@@ -95,14 +95,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="mt-4 text-lg opacity-60">{product.description}</p>
             <p className="mt-6 text-2xl font-black" style={{ color: theme?.secondary_color ?? "inherit" }}>${(Number(product.retail_price) / 100).toFixed(2)}</p>
 
-            <div className="mt-8 grid gap-2">
-              {((variants || []) as PublicVariant[]).map((variant) => (
-                <div key={variant.id} className="rounded-xl border border-black/10 px-4 py-3 text-sm">
-                  <strong>{variant.size || "One size"}</strong>{variant.color ? ` · ${variant.color}` : ""}
-                </div>
-              ))}
-            </div>
-
             <AddToCartButton
               productId={product.id}
               storeSlug={store.slug}
@@ -113,6 +105,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 size: variant.size,
                 color: variant.color,
                 price_override: variant.price_override,
+                color_image_url: variant.color_image_url,
+                in_stock: variant.in_stock,
               }))}
             />
           </div>

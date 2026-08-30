@@ -38,3 +38,38 @@ export async function createOrganization(formData: FormData) {
   revalidatePath("/admin/organizations");
   redirect("/admin/organizations");
 }
+const UpdateOrganization = CreateOrganization.extend({
+  id: z.string().uuid(),
+  status: z.enum(["active", "inactive", "archived"]),
+});
+
+export async function updateOrganization(formData: FormData) {
+  const { supabase } = await requireSuperAdmin();
+
+  const input = UpdateOrganization.parse({
+    id: formData.get("id"),
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    organizationType: formData.get("organizationType"),
+    revenueShareRate: formData.get("revenueShareRate"),
+    status: formData.get("status"),
+  });
+
+  const { error } = await supabase
+    .from("organizations")
+    .update({
+      name: input.name,
+      slug: input.slug,
+      organization_type: input.organizationType,
+      default_revenue_share_rate: input.revenueShareRate,
+      status: input.status,
+    })
+    .eq("id", input.id);
+
+  if (error) throw new Error(error.code === "23505" ? "That organization slug is already in use." : "Unable to update organization.");
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/organizations");
+  revalidatePath(`/admin/organizations/${input.id}`);
+  redirect("/admin/organizations");
+}

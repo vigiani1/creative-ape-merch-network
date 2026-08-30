@@ -94,8 +94,8 @@ export default async function TemplatesPage() {
                   <input name="finishedSalePrice" type="number" min="0" step="0.01" defaultValue={moneyInput(template.finished_sale_price)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
                 </label>
                 <label className="grid gap-2 text-sm font-semibold">Profit each
-                  <div className={`rounded-xl border px-4 py-3 font-black ${template.profit_each < 0 ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}>
-                    {moneyInput(template.profit_each)}
+                  <div className={`rounded-xl border px-4 py-3 font-black ${Number(template.profit_each ?? 0) < 0 ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}>
+                    {moneyInput(template.profit_each ?? 0)}
                   </div>
                 </label>
               </div>

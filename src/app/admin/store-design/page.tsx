@@ -104,10 +104,7 @@ export default async function StoreDesignPage({
       <section className="admin-store-selector">
         <label className="admin-field">
           <span>Store</span>
-          <select
-            defaultValue={requestedStoreId}
-            onChange={undefined}
-          >
+          <select defaultValue={requestedStoreId}>
             {stores.map((store) => (
               <option key={store.id} value={store.id}>{store.name}</option>
             ))}

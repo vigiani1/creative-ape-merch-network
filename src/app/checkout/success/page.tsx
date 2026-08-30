@@ -1,17 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 
 export default function CheckoutSuccessPage() {
-  const search = useSearchParams();
   const { clear } = useCart();
-  const storeSlug = search.get("store");
+  const cleared = useRef(false);
+  const [storeSlug, setStoreSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    clear();
+    const params = new URLSearchParams(window.location.search);
+    setStoreSlug(params.get("store"));
+
+    if (!cleared.current) {
+      cleared.current = true;
+      clear();
+    }
   }, [clear]);
 
   return (

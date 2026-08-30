@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     >
       <div className="mx-auto max-w-6xl p-6 py-12">
         <div className="mb-6 flex justify-between text-sm">
-          <Link href={\`/shop/\${store.slug}\`} className="font-semibold underline">Back to store</Link>
+          <Link href={`/shop/${store.slug}`} className="font-semibold underline">Back to store</Link>
           <Link href="/cart" className="font-semibold underline">Cart</Link>
         </div>
 
@@ -93,12 +93,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="text-sm font-bold uppercase tracking-[0.18em] opacity-45">{store.name}</p>
             <h1 className="mt-3 text-4xl font-black">{product.name}</h1>
             <p className="mt-4 text-lg opacity-60">{product.description}</p>
-            <p className="mt-6 text-2xl font-black" style={{ color: theme?.secondary_color ?? "inherit" }}>\${(Number(product.retail_price) / 100).toFixed(2)}</p>
+            <p className="mt-6 text-2xl font-black" style={{ color: theme?.secondary_color ?? "inherit" }}>${(Number(product.retail_price) / 100).toFixed(2)}</p>
 
             <div className="mt-8 grid gap-2">
               {((variants || []) as PublicVariant[]).map((variant) => (
                 <div key={variant.id} className="rounded-xl border border-black/10 px-4 py-3 text-sm">
-                  <strong>{variant.size || "One size"}</strong>{variant.color ? \` · \${variant.color}\` : ""}
+                  <strong>{variant.size || "One size"}</strong>{variant.color ? ` · ${variant.color}` : ""}
                 </div>
               ))}
             </div>

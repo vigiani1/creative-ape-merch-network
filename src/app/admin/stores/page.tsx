@@ -2,120 +2,90 @@ import Link from "next/link";
 import { createStore } from "./actions";
 import { requireSuperAdmin } from "@/lib/auth";
 
+type StoreRow = {
+  id: string;
+  organizationId: string;
+  organizationName: string;
+  name: string;
+  slug: string;
+  title?: string | null;
+  status: string;
+  availabilityStatus?: string | null;
+  productCount: number;
+};
+
 export default async function StoresPage() {
   const { supabase } = await requireSuperAdmin();
 
-  const [{ data: organizations, error: orgError }, { data: stores, error: storeError }] = await Promise.all([
-    supabase.from("organizations").select("id,name").eq("status", "active").order("name"),
-    supabase
-      .from("stores")
-      .select("id,organization_id,name,slug,title,status,published_at,organizations(name)")
-      .order("created_at", { ascending: false }),
+  const [{ data: storesData, error: storeError }, { data: orgData, error: orgError }] = await Promise.all([
+    supabase.rpc("get_admin_stores_v1", { target_organization_id: undefined, search_query: undefined }),
+    supabase.rpc("get_admin_organizations_v1", { search_query: undefined }),
   ]);
 
-  if (orgError || storeError) throw new Error("Unable to load stores.");
+  if (storeError || orgError) throw new Error("Unable to load stores.");
+
+  const stores=(storesData ?? []) as StoreRow[];
+  const organizations=(orgData ?? []) as Array<{id:string;name:string;status:string}>;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
-      <section className="rounded-2xl border border-black/10 bg-white p-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-black/45">Storefronts</p>
-            <h2 className="mt-1 text-2xl font-black">Stores</h2>
-          </div>
-          <p className="text-sm text-black/50">{stores?.length ?? 0} total</p>
-        </div>
-
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="border-b border-black/10 text-black/45">
-              <tr>
-                <th className="py-3 pr-4 font-semibold">Store</th>
-                <th className="py-3 pr-4 font-semibold">Organization</th>
-                <th className="py-3 pr-4 font-semibold">Status</th>
-                <th className="py-3 pr-4 font-semibold">Slug</th>
-                <th className="py-3 pr-4 font-semibold">Public page</th>
-                <th className="py-3 font-semibold">Manage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(stores ?? []).map((store) => {
-                const org = Array.isArray(store.organizations) ? store.organizations[0] : store.organizations;
-                return (
-                  <tr key={store.id} className="border-b border-black/5 last:border-0">
-                    <td className="py-4 pr-4">
-                      <p className="font-bold">{store.title || store.name}</p>
-                      {store.title && store.title !== store.name ? <p className="mt-1 text-xs text-black/45">{store.name}</p> : null}
-                    </td>
-                    <td className="py-4 pr-4">{org?.name ?? "Unknown"}</td>
-                    <td className="py-4 pr-4">
-                      <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{store.status}</span>
-                    </td>
-                    <td className="py-4 pr-4 font-mono text-xs">{store.slug}</td>
-                    <td className="py-4">
-                      {store.status === "published" ? (
-                        <Link className="font-semibold underline" href={`/shop/${store.slug}`} target="_blank">Open store</Link>
-                      ) : (
-                        <span className="text-black/35">Not published</span>
-                      )}
-                    </td>
-                    <td className="py-4"><Link href={`/admin/stores/${store.id}`} className="font-semibold underline">Edit</Link></td>
-                  </tr>
-                );
-              })}
-              {!stores?.length && (
-                <tr><td colSpan={6} className="py-10 text-center text-black/45">No stores yet.</td></tr>
-              )}
-            </tbody>
-          </table>
+    <div className="admin-page">
+      <section className="admin-page-head">
+        <div>
+          <p className="admin-kicker">Storefronts</p>
+          <h2>Stores</h2>
+          <p>Manage storefront ownership, publishing state, product counts, and design access.</p>
         </div>
       </section>
 
-      <aside className="rounded-2xl border border-black/10 bg-white p-6">
-        <p className="text-sm font-semibold text-black/45">New storefront</p>
-        <h2 className="mt-1 text-2xl font-black">Create store</h2>
-        <p className="mt-2 text-sm text-black/55">Each storefront belongs to one organization and gets its own default theme automatically.</p>
+      <div className="admin-split-layout">
+        <section className="admin-panel">
+          <div className="admin-panel__head">
+            <div>
+              <p className="admin-kicker">Directory</p>
+              <h3>{stores.length} stores</h3>
+            </div>
+          </div>
 
-        <form action={createStore} className="mt-6 grid gap-4">
-          <label className="grid gap-2 text-sm font-semibold">
-            Organization
-            <select name="organizationId" required defaultValue="" className="rounded-xl border border-black/15 px-4 py-3 font-normal">
-              <option value="" disabled>Select organization</option>
-              {(organizations ?? []).map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
-            </select>
-          </label>
+          <div className="admin-store-list">
+            {stores.map((store)=>(
+              <article key={store.id} className="admin-store-row">
+                <div>
+                  <strong>{store.title || store.name}</strong>
+                  <span>{store.organizationName}</span>
+                </div>
+                <div><span>Products</span><strong>{store.productCount}</strong></div>
+                <div><span>Slug</span><strong>{store.slug}</strong></div>
+                <div className="admin-store-row__actions">
+                  <span className={`admin-status admin-status--${store.status}`}>{store.status}</span>
+                  <Link href={`/admin/store-design?store=${store.id}`}>Design</Link>
+                  <Link href={`/admin/stores/${store.id}`}>Manage</Link>
+                  {store.status === "published" ? <Link href={`/shop/${store.slug}`} target="_blank">Open ↗</Link> : null}
+                </div>
+              </article>
+            ))}
+            {!stores.length ? <div className="admin-empty">No stores yet.</div> : null}
+          </div>
+        </section>
 
-          <label className="grid gap-2 text-sm font-semibold">
-            Store name
-            <input name="name" required minLength={2} maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Example Spirit Shop" />
-          </label>
+        <aside className="admin-panel admin-create-panel">
+          <div className="admin-panel__head">
+            <div>
+              <p className="admin-kicker">New</p>
+              <h3>Create store</h3>
+            </div>
+          </div>
 
-          <label className="grid gap-2 text-sm font-semibold">
-            Public slug
-            <input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="example-spirit-shop" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">
-            Public title
-            <input name="title" maxLength={160} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Example High School Spirit Shop" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">
-            Description
-            <textarea name="description" rows={4} maxLength={1000} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Tell customers what this store supports." />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">
-            Initial status
-            <select name="status" defaultValue="draft" className="rounded-xl border border-black/15 px-4 py-3 font-normal">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </label>
-
-          <button type="submit" className="mt-2 rounded-xl bg-black px-5 py-3 font-bold text-white">Create store</button>
-        </form>
-      </aside>
+          <form action={createStore} className="admin-create-form">
+            <label className="admin-field"><span>Organization</span><select name="organizationId" required defaultValue=""><option value="" disabled>Select organization</option>{organizations.filter((org)=>org.status==="active").map((org)=><option key={org.id} value={org.id}>{org.name}</option>)}</select></label>
+            <label className="admin-field"><span>Store name</span><input name="name" required minLength={2} maxLength={120} placeholder="Example Spirit Shop" /></label>
+            <label className="admin-field"><span>Public slug</span><input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} placeholder="example-spirit-shop" /></label>
+            <label className="admin-field"><span>Public title</span><input name="title" maxLength={160} placeholder="Example High School Spirit Shop" /></label>
+            <label className="admin-field"><span>Description</span><textarea name="description" rows={4} maxLength={1000} placeholder="Tell customers what this store supports." /></label>
+            <label className="admin-field"><span>Initial status</span><select name="status" defaultValue="draft"><option value="draft">Draft</option><option value="published">Published</option></select></label>
+            <button type="submit" className="admin-primary-action">Create Store</button>
+          </form>
+        </aside>
+      </div>
     </div>
   );
 }

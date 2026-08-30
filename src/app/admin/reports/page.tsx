@@ -44,7 +44,7 @@ export default async function ReportsPage() {
       <div>
         <p className="text-sm font-semibold text-black/45">Finance</p>
         <h1 className="mt-1 text-2xl font-black">Organization reports</h1>
-        <p className="mt-2 text-sm text-black/55">Live tenant-level financial reporting. Test checkout orders are intentionally excluded from revenue and organization-share totals.</p>
+        <p className="mt-2 text-sm text-black/55">Live tenant-level financial reporting. Test checkout orders are intentionally excluded from revenue and organization-share totals.</p>\n        <a href="/api/admin/reports/organizations.csv" className="mt-4 inline-block rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Download CSV</a>
       </div>
 
       <div className="mt-6 overflow-x-auto">

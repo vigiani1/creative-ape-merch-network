@@ -23,8 +23,9 @@ export async function GET() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const stripeSecret = process.env.STRIPE_SECRET_KEY;
   const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
-  const checks: Record<string, boolean> = {
+  const coreChecks: Record<string, boolean> = {
     supabaseUrlPresent: Boolean(supabaseUrl),
     supabaseUrlValid: isValidSupabaseUrl(supabaseUrl),
     supabasePublishableKeyPresent: Boolean(publishableKey),
@@ -34,26 +35,36 @@ export async function GET() {
     appUrlPresent: Boolean(appUrl),
     appUrlValid: isValidHttpsUrl(appUrl),
     serviceRoleKeyPresent: Boolean(serviceRoleKey),
-    serviceRoleKeyLooksValid: Boolean(serviceRoleKey?.startsWith("sb_secret_") || serviceRoleKey?.startsWith("eyJ")),
-    stripeSecretPresent: Boolean(stripeSecret),
-    stripeSecretLooksTestMode: Boolean(stripeSecret?.startsWith("sk_test_")),
-    stripeWebhookSecretPresent: Boolean(stripeWebhookSecret),
-    stripeWebhookSecretLooksValid: Boolean(stripeWebhookSecret?.startsWith("whsec_")),
+    serviceRoleKeyLooksValid: Boolean(
+      serviceRoleKey?.startsWith("sb_secret_") || serviceRoleKey?.startsWith("eyJ")
+    ),
+  };
+
+  const optionalIntegrations = {
+    stripe: {
+      configured: Boolean(stripeSecret && stripeWebhookSecret && stripePublishableKey),
+      secretKeyPresent: Boolean(stripeSecret),
+      secretKeyLooksTestMode: Boolean(stripeSecret?.startsWith("sk_test_")),
+      webhookSecretPresent: Boolean(stripeWebhookSecret),
+      webhookSecretLooksValid: Boolean(stripeWebhookSecret?.startsWith("whsec_")),
+      publishableKeyPresent: Boolean(stripePublishableKey),
+      publishableKeyLooksTestMode: Boolean(stripePublishableKey?.startsWith("pk_test_")),
+    },
   };
 
   let authStatus: number | null = null;
   let databaseStatus: number | null = null;
 
-  if (checks.supabaseUrlValid && publishableKey) {
+  if (coreChecks.supabaseUrlValid && publishableKey) {
     try {
       const authResponse = await fetch(`${supabaseUrl}/auth/v1/settings`, {
         headers: { apikey: publishableKey },
         cache: "no-store",
       });
       authStatus = authResponse.status;
-      checks.supabaseAuthReachable = authResponse.ok;
+      coreChecks.supabaseAuthReachable = authResponse.ok;
     } catch {
-      checks.supabaseAuthReachable = false;
+      coreChecks.supabaseAuthReachable = false;
     }
 
     try {
@@ -65,21 +76,22 @@ export async function GET() {
         cache: "no-store",
       });
       databaseStatus = dbResponse.status;
-      checks.supabaseDatabaseReachable = dbResponse.ok;
+      coreChecks.supabaseDatabaseReachable = dbResponse.ok;
     } catch {
-      checks.supabaseDatabaseReachable = false;
+      coreChecks.supabaseDatabaseReachable = false;
     }
   } else {
-    checks.supabaseAuthReachable = false;
-    checks.supabaseDatabaseReachable = false;
+    coreChecks.supabaseAuthReachable = false;
+    coreChecks.supabaseDatabaseReachable = false;
   }
 
-  const ok = Object.values(checks).every(Boolean);
+  const ok = Object.values(coreChecks).every(Boolean);
 
   return NextResponse.json(
     {
       ok,
-      checks,
+      coreChecks,
+      optionalIntegrations,
       upstream: {
         supabaseAuthStatus: authStatus,
         supabaseDatabaseStatus: databaseStatus,

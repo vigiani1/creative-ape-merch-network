@@ -12,7 +12,7 @@ export default async function TemplatesPage() {
     { data: stores, error: storeError },
     { data: vendors, error: vendorError },
   ] = await Promise.all([
-    supabase.from("product_templates").select("id,name,sku_prefix,description,base_production_cost,category,active,vendor_id,vendor_part_number,created_at").order("created_at", { ascending: false }),
+    supabase.from("product_templates").select("id,name,sku_prefix,description,base_production_cost,blank_product_cost,production_material_cost,finished_sale_price,profit_each,category,active,vendor_id,vendor_part_number,created_at").order("created_at", { ascending: false }),
     supabase.from("product_template_variants").select("id,product_template_id,variant_group,size,color,sku_suffix,vendor_part_number,price_override,production_cost_override,availability_status,show_on_card,weight_oz,length_in,width_in,height_in,packaging_class,stackable,compressible,ships_alone,created_at").order("created_at"),
     supabase.from("stores").select("id,name,slug,status,organizations(name)").neq("status","archived").order("name"),
     supabase.from("vendors").select("id,name").eq("active",true).order("name"),
@@ -47,7 +47,20 @@ export default async function TemplatesPage() {
           </label>
           <label className="grid gap-2 text-sm font-semibold">Vendor part number<input name="vendorPartNumber" className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
           <label className="grid gap-2 text-sm font-semibold">Category<input name="category" className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
-          <label className="grid gap-2 text-sm font-semibold">Base production cost $<input name="baseProductionCost" type="number" min="0" step="0.01" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
+          <div className="grid gap-3 md:col-span-2 md:grid-cols-4">
+            <label className="grid gap-2 text-sm font-semibold">Blank product price $
+              <input name="blankProductPrice" type="number" min="0" step="0.01" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="0.00" />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold">Production material price $
+              <input name="productionMaterialPrice" type="number" min="0" step="0.01" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="0.00" />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold">Finished product sale price $
+              <input name="finishedSalePrice" type="number" min="0" step="0.01" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="0.00" />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold">Profit each
+              <div className="rounded-xl border border-dashed border-black/15 bg-neutral-50 px-4 py-3 font-black text-black/45">Calculated after save</div>
+            </label>
+          </div>
           <label className="grid gap-2 text-sm font-semibold md:col-span-2">Description<textarea name="description" rows={3} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
           <label className="flex items-center gap-3 text-sm font-semibold"><input name="active" type="checkbox" defaultChecked className="h-4 w-4" /> Active</label>
           <button className="w-fit rounded-xl bg-black px-5 py-3 font-bold text-white">Create template</button>
@@ -70,7 +83,22 @@ export default async function TemplatesPage() {
               </label>
               <label className="grid gap-2 text-sm font-semibold">Vendor part number<input name="vendorPartNumber" defaultValue={template.vendor_part_number ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
               <label className="grid gap-2 text-sm font-semibold">Category<input name="category" defaultValue={template.category ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
-              <label className="grid gap-2 text-sm font-semibold">Base production cost $<input name="baseProductionCost" type="number" min="0" step="0.01" defaultValue={moneyInput(template.base_production_cost)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
+              <div className="grid gap-3 md:col-span-2 md:grid-cols-4">
+                <label className="grid gap-2 text-sm font-semibold">Blank product price $
+                  <input name="blankProductPrice" type="number" min="0" step="0.01" defaultValue={moneyInput(template.blank_product_cost)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">Production material price $
+                  <input name="productionMaterialPrice" type="number" min="0" step="0.01" defaultValue={moneyInput(template.production_material_cost)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">Finished product sale price $
+                  <input name="finishedSalePrice" type="number" min="0" step="0.01" defaultValue={moneyInput(template.finished_sale_price)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold">Profit each
+                  <div className={`rounded-xl border px-4 py-3 font-black ${template.profit_each < 0 ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}>
+                    {moneyInput(template.profit_each)}
+                  </div>
+                </label>
+              </div>
               <label className="grid gap-2 text-sm font-semibold md:col-span-2">Description<textarea name="description" rows={3} defaultValue={template.description ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
               <label className="flex items-center gap-3 text-sm font-semibold"><input name="active" type="checkbox" defaultChecked={template.active} className="h-4 w-4" /> Active</label>
               <button className="w-fit rounded-xl border border-black/15 px-4 py-2.5 text-sm font-bold">Save template</button>
@@ -143,7 +171,7 @@ export default async function TemplatesPage() {
                 <label className="grid gap-2 text-sm font-semibold">Store<select name="storeId" required defaultValue="" className="rounded-xl border border-black/15 px-3 py-3 font-normal"><option value="" disabled>Select store</option>{(stores ?? []).map(store => { const org=Array.isArray(store.organizations)?store.organizations[0]:store.organizations; return <option key={store.id} value={store.id}>{org?.name ?? "Unknown"} · {store.name}</option>; })}</select></label>
                 <label className="grid gap-2 text-sm font-semibold">Product name<input name="name" defaultValue={template.name} required className="rounded-xl border border-black/15 px-3 py-3 font-normal" /></label>
                 <label className="grid gap-2 text-sm font-semibold">Slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" className="rounded-xl border border-black/15 px-3 py-3 font-normal" /></label>
-                <label className="grid gap-2 text-sm font-semibold">Retail price $<input name="retailPrice" type="number" min="0" step="0.01" required className="rounded-xl border border-black/15 px-3 py-3 font-normal" /></label>
+                <label className="grid gap-2 text-sm font-semibold">Retail price $<input name="retailPrice" type="number" min="0" step="0.01" defaultValue={moneyInput(template.finished_sale_price)} required className="rounded-xl border border-black/15 px-3 py-3 font-normal" /></label>
                 <label className="grid gap-2 text-sm font-semibold">Revenue share %<input name="revenueShareRate" type="number" min="0" max="100" step="0.01" className="rounded-xl border border-black/15 px-3 py-3 font-normal" /></label>
                 <label className="grid gap-2 text-sm font-semibold">Status<select name="status" defaultValue="draft" className="rounded-xl border border-black/15 px-3 py-3 font-normal"><option value="draft">Draft</option><option value="published">Published</option></select></label>
                 <label className="flex items-center gap-3 text-sm font-semibold"><input name="featured" type="checkbox" /> Featured</label>

@@ -2,77 +2,95 @@ import Link from "next/link";
 import { requireSuperAdmin } from "@/lib/auth";
 
 function money(cents: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+  return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(cents/100);
 }
 
-export default async function OrdersPage() {
-  const { supabase } = await requireSuperAdmin();
+type OrdersPayload = {
+  count?: number;
+  orders?: Array<{
+    id:string;
+    orderNumber:string;
+    organizationName?:string|null;
+    storeName?:string|null;
+    customerName?:string|null;
+    customerEmail?:string|null;
+    paymentStatus:string;
+    fulfillmentStatus:string;
+    currency:string;
+    grandTotalCents:number;
+    createdAt:string;
+  }>;
+};
 
-  const [{ data: orders, error: ordersError }, { data: organizations }, { data: stores }] = await Promise.all([
-    supabase.from("orders").select("id,organization_id,store_id,order_number,customer_name,customer_email,payment_status,fulfillment_status,grand_total,created_at").order("created_at", { ascending: false }),
-    supabase.from("organizations").select("id,name"),
-    supabase.from("stores").select("id,name"),
-  ]);
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string,string|string[]|undefined>>;
+}) {
+  const query=await searchParams;
+  const { supabase }=await requireSuperAdmin();
+  const payment=typeof query.payment==="string"?query.payment:undefined;
+  const fulfillment=typeof query.fulfillment==="string"?query.fulfillment:undefined;
+  const search=typeof query.q==="string"?query.q:undefined;
 
-  if (ordersError) throw new Error("Unable to load orders.");
+  const { data,error }=await supabase.rpc("get_admin_orders_v1",{
+    target_organization_id:undefined,
+    target_store_id:undefined,
+    payment_status_filter:payment,
+    fulfillment_status_filter:fulfillment,
+    search_query:search,
+    result_limit:200,
+    result_offset:0,
+  });
 
-  const orgNames = new Map((organizations ?? []).map((org) => [org.id, org.name]));
-  const storeNames = new Map((stores ?? []).map((store) => [store.id, store.name]));
+  if(error) throw new Error("Unable to load orders.");
+
+  const payload=(data ?? {}) as OrdersPayload;
+  const orders=payload.orders ?? [];
 
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-6">
-      <div className="flex items-end justify-between gap-4">
+    <div className="admin-page">
+      <section className="admin-page-head">
         <div>
-          <p className="text-sm font-semibold text-black/45">Commerce</p>
-          <h1 className="mt-1 text-2xl font-black">Orders</h1>
-          <p className="mt-2 text-sm text-black/55">Orders beginning with TEST- are simulated checkout records. No real payment was processed for them.</p>
+          <p className="admin-kicker">Commerce</p>
+          <h2>Orders</h2>
+          <p>{payload.count ?? orders.length} orders across the network.</p>
         </div>
-        <p className="text-sm text-black/50">{orders?.length ?? 0} total</p>
-      </div>
+      </section>
 
-      <div className="mt-6 overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="border-b border-black/10 text-black/45">
-            <tr>
-              <th className="py-3 pr-4 font-semibold">Order</th>
-              <th className="py-3 pr-4 font-semibold">Customer</th>
-              <th className="py-3 pr-4 font-semibold">Organization / Store</th>
-              <th className="py-3 pr-4 font-semibold">Payment</th>
-              <th className="py-3 pr-4 font-semibold">Fulfillment</th>
-              <th className="py-3 pr-4 font-semibold">Total</th>
-              <th className="py-3 font-semibold">Created</th>
-            </tr>
-          </thead>
+      <section className="admin-product-toolbar">
+        <form className="admin-search" action="/admin/orders">
+          <input name="q" type="search" defaultValue={search} placeholder="Order number, customer, email" />
+          <button type="submit">Search</button>
+        </form>
+        <div className="admin-filter-row">
+          <a href="/admin/orders" className={!payment&&!fulfillment?"is-active":""}>All</a>
+          <a href="/admin/orders?payment=paid" className={payment==="paid"?"is-active":""}>Paid</a>
+          <a href="/admin/orders?fulfillment=paid" className={fulfillment==="paid"?"is-active":""}>To fulfill</a>
+          <a href="/admin/orders?fulfillment=fulfilled" className={fulfillment==="fulfilled"?"is-active":""}>Fulfilled</a>
+        </div>
+      </section>
+
+      <section className="admin-table-wrap">
+        <table className="admin-table admin-orders-table">
+          <thead><tr><th>Order</th><th>Customer</th><th>Organization / Store</th><th>Payment</th><th>Fulfillment</th><th>Total</th><th>Created</th></tr></thead>
           <tbody>
-            {(orders ?? []).map((order) => {
-              const isTest = order.order_number.startsWith("TEST-");
-              return (
-                <tr key={order.id} className="border-b border-black/5 last:border-0">
-                  <td className="py-4 pr-4">
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/orders/${order.id}`} className="font-bold underline">{order.order_number}</Link>
-                      {isTest ? <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-900">Test</span> : null}
-                    </div>
-                  </td>
-                  <td className="py-4 pr-4">
-                    <p>{order.customer_name || "Guest"}</p>
-                    <p className="mt-1 text-xs text-black/45">{order.customer_email || "No email"}</p>
-                  </td>
-                  <td className="py-4 pr-4">
-                    <p>{orgNames.get(order.organization_id) ?? "Unknown"}</p>
-                    <p className="mt-1 text-xs text-black/45">{storeNames.get(order.store_id) ?? "Unknown store"}</p>
-                  </td>
-                  <td className="py-4 pr-4"><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{isTest ? "simulated" : order.payment_status}</span></td>
-                  <td className="py-4 pr-4"><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{order.fulfillment_status}</span></td>
-                  <td className="py-4 pr-4 font-bold">{money(order.grand_total)}</td>
-                  <td className="py-4 text-xs text-black/55">{new Date(order.created_at).toLocaleString("en-US")}</td>
-                </tr>
-              );
-            })}
-            {!orders?.length ? <tr><td colSpan={7} className="py-12 text-center text-black/45">No orders yet.</td></tr> : null}
+            {orders.map((order)=>(
+              <tr key={order.id}>
+                <td><Link href={`/admin/orders/${order.id}`}>{order.orderNumber}</Link></td>
+                <td><strong>{order.customerName || "Guest"}</strong><small>{order.customerEmail || "No email"}</small></td>
+                <td><strong>{order.organizationName || "Unknown"}</strong><small>{order.storeName || "Unknown store"}</small></td>
+                <td><span className={`admin-status admin-status--${order.paymentStatus}`}>{order.paymentStatus}</span></td>
+                <td><span className={`admin-status admin-status--${order.fulfillmentStatus}`}>{order.fulfillmentStatus}</span></td>
+                <td>{money(order.grandTotalCents)}</td>
+                <td>{new Date(order.createdAt).toLocaleDateString("en-US")}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
-      </div>
+      </section>
+
+      {!orders.length?<div className="admin-empty admin-empty--large"><h3>No orders found.</h3><p>Try another filter or search.</p></div>:null}
     </div>
   );
 }

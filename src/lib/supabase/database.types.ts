@@ -986,6 +986,57 @@ export type Database = {
           },
         ]
       }
+      product_color_options: {
+        Row: {
+          active: boolean
+          color_name: string
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string | null
+          organization_id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color_name: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          organization_id: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color_name?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          organization_id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_color_options_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_color_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_media: {
         Row: {
           alt_text: string | null
@@ -1212,6 +1263,7 @@ export type Database = {
           id: string
           inventory_quantity: number | null
           length_in: number | null
+          managed_by_option_editor: boolean
           organization_id: string
           packaging_class: string | null
           price_override: number | null
@@ -1237,6 +1289,7 @@ export type Database = {
           id?: string
           inventory_quantity?: number | null
           length_in?: number | null
+          managed_by_option_editor?: boolean
           organization_id: string
           packaging_class?: string | null
           price_override?: number | null
@@ -1262,6 +1315,7 @@ export type Database = {
           id?: string
           inventory_quantity?: number | null
           length_in?: number | null
+          managed_by_option_editor?: boolean
           organization_id?: string
           packaging_class?: string | null
           price_override?: number | null
@@ -1311,6 +1365,7 @@ export type Database = {
           description: string | null
           featured: boolean
           id: string
+          inventory_quantity: number | null
           markup_amount: number | null
           name: string
           organization_id: string
@@ -1333,6 +1388,7 @@ export type Database = {
           description?: string | null
           featured?: boolean
           id?: string
+          inventory_quantity?: number | null
           markup_amount?: number | null
           name: string
           organization_id: string
@@ -1355,6 +1411,7 @@ export type Database = {
           description?: string | null
           featured?: boolean
           id?: string
+          inventory_quantity?: number | null
           markup_amount?: number | null
           name?: string
           organization_id?: string
@@ -2041,7 +2098,9 @@ export type Database = {
         Returns: {
           availability_status: string
           color: string
+          color_image_url: string
           id: string
+          in_stock: boolean
           price_override: number
           size: string
           sku: string
@@ -2137,6 +2196,15 @@ export type Database = {
           detail: string
           passed: boolean
         }[]
+      }
+      save_product_size_color_options: {
+        Args: {
+          color_options: Json
+          qty_available: number
+          selected_sizes: string[]
+          target_product_id: string
+        }
+        Returns: undefined
       }
       storage_object_org_id: { Args: { object_name: string }; Returns: string }
       store_is_publicly_available: {

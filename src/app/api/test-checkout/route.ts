@@ -8,16 +8,18 @@ const Body = z.object({
   customerEmail: z.string().trim().email().max(320),
   items: z.array(z.object({
     productId: z.string().uuid(),
+    variantId: z.string().uuid().nullable().optional(),
     quantity: z.number().int().min(1).max(25),
   })).min(1).max(100),
 }).superRefine(({ items }, context) => {
   const ids = new Set<string>();
   for (const item of items) {
-    if (ids.has(item.productId)) {
-      context.addIssue({ code: "custom", message: "Each product may appear only once", path: ["items"] });
+    const key = `${item.productId}:${item.variantId ?? "base"}`;
+    if (ids.has(key)) {
+      context.addIssue({ code: "custom", message: "Each cart option may appear only once", path: ["items"] });
       return;
     }
-    ids.add(item.productId);
+    ids.add(key);
   }
 });
 

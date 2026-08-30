@@ -26,7 +26,7 @@ type PublicMedia = {
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!hasSupabaseEnv()) return <main className="mx-auto max-w-5xl p-8"><SetupRequired area={\`Storefront /shop/\${slug}\`} /></main>;
+  if (!hasSupabaseEnv()) return <main className="mx-auto max-w-5xl p-8"><SetupRequired area={`Storefront /shop/${slug}`} /></main>;
 
   const supabase = await createClient();
   const { data: stores } = await supabase.rpc("get_public_store", { store_slug: slug });
@@ -66,7 +66,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         style={{
           backgroundColor: heroColor,
           backgroundImage: theme?.hero_image_url
-            ? \`linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("\${theme.hero_image_url}")\`
+            ? `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("${theme.hero_image_url}")`
             : undefined,
         }}
       >
@@ -84,7 +84,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
           return (
             <Link
               key={product.id}
-              href={\`/shop/\${store.slug}/products/\${product.slug}\`}
+              href={`/shop/${store.slug}/products/${product.slug}`}
               className="rounded-2xl border border-black/10 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="aspect-square overflow-hidden rounded-xl bg-neutral-100">
@@ -92,7 +92,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
               </div>
               <h2 className="mt-4 text-lg font-bold">{product.name}</h2>
               <p className="mt-1 line-clamp-2 text-sm opacity-60">{product.description}</p>
-              <p className="mt-4 font-black" style={{ color: theme?.secondary_color ?? textColor }}>\${(Number(product.retail_price) / 100).toFixed(2)}</p>
+              <p className="mt-4 font-black" style={{ color: theme?.secondary_color ?? textColor }}>${(Number(product.retail_price) / 100).toFixed(2)}</p>
             </Link>
           );
         })}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOrganizationMembership } from "@/lib/auth";
 
 type Search = { q?: string; category?: string };
@@ -13,7 +14,8 @@ export default async function PortalProductLibraryPage({ searchParams }: { searc
   const q = (params.q ?? "").trim().toLowerCase();
   const category = (params.category ?? "").trim();
 
-  const { supabase, organizationIds } = await requireOrganizationMembership();
+  const { supabase, organizationIds, memberships } = await requireOrganizationMembership();
+  const adminOrganizationIds = new Set(memberships.filter((membership) => membership.role === "admin").map((membership) => membership.organization_id));
 
   const { data: categoryRows, error: categoryError } = await supabase
     .from("organization_product_library")
@@ -75,6 +77,11 @@ export default async function PortalProductLibraryPage({ searchParams }: { searc
                 <p><span className="font-semibold">Store:</span> {store?.name ?? "Not assigned yet"}</p>
                 <p><span className="font-semibold">Variants:</span> {variants.length}</p>
               </div>
+              {adminOrganizationIds.has(item.organization_id) ? (
+                <Link href={`/portal/products/${item.id}`} className="mt-4 inline-block rounded-xl border border-black/15 px-4 py-2.5 text-sm font-bold">
+                  Manage sizes, colors & inventory
+                </Link>
+              ) : null}
             </article>
           );
         })}

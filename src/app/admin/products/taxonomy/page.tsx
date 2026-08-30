@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { requireSuperAdmin } from "@/lib/auth";
 import { saveCategory, saveCollection } from "./actions";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 type Category={
-  id:string;name:string;slug:string;description?:string|null;usesSize:boolean;usesColor:boolean;
+  id:string;name:string;slug:string;description?:string|null;imageUrl?:string|null;usesSize:boolean;usesColor:boolean;
   defaultSizes?:string[];defaultColors?:string[];active:boolean;productCount:number;
 };
 type Collection={
@@ -43,6 +44,19 @@ export default async function TaxonomyPage() {
       <div className="admin-taxonomy-grid">
         <section className="admin-panel">
           <div className="admin-panel__head"><div><p className="admin-kicker">Categories</p><h3>Product types</h3></div></div>
+          <form action={saveCategory} className="admin-create-form admin-create-form--bordered">
+            <p className="admin-kicker">New Category</p>
+            <label className="admin-field"><span>Name</span><input name="name" required placeholder="T-Shirts"/></label>
+            <label className="admin-field"><span>Description</span><textarea name="description" rows={3}/></label>
+            <ImageUploader scope="master" urlInputName="imageUrl" label="Upload Category Image" />
+            <label className="admin-check-row"><input name="usesSize" type="checkbox" defaultChecked/><span>Uses Size</span></label>
+            <label className="admin-check-row"><input name="usesColor" type="checkbox" defaultChecked/><span>Uses Color</span></label>
+            <label className="admin-field"><span>Default sizes</span><input name="defaultSizes" defaultValue="Small, Medium, Large, XL, 2XL, 3XL, 4XL"/></label>
+            <label className="admin-field"><span>Default colors</span><input name="defaultColors"/></label>
+            <label className="admin-check-row"><input name="active" type="checkbox" defaultChecked/><span>Active</span></label>
+            <button className="admin-primary-action">Create Category</button>
+          </form>
+
           <div className="admin-taxonomy-list">
             {(payload.categories ?? []).map((category)=>(
               <details key={category.id} className="admin-taxonomy-item">
@@ -54,6 +68,7 @@ export default async function TaxonomyPage() {
                   <input type="hidden" name="id" value={category.id}/>
                   <label className="admin-field"><span>Name</span><input name="name" defaultValue={category.name} required/></label>
                   <label className="admin-field admin-field--wide"><span>Description</span><textarea name="description" rows={3} defaultValue={category.description || ""}/></label>
+                  <ImageUploader scope="master" urlInputName="imageUrl" label="Upload Category Image" initialUrl={category.imageUrl || ""} />
                   <label className="admin-check-row"><input name="usesSize" type="checkbox" defaultChecked={category.usesSize}/><span>Uses Size</span></label>
                   <label className="admin-check-row"><input name="usesColor" type="checkbox" defaultChecked={category.usesColor}/><span>Uses Color</span></label>
                   <label className="admin-field"><span>Default sizes</span><input name="defaultSizes" defaultValue={(category.defaultSizes ?? []).join(", ")}/></label>

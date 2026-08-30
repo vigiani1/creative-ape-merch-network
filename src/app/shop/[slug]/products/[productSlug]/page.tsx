@@ -11,6 +11,15 @@ type HomePayload = {
   navigation?: { id?: string; label: string; target: string }[];
 };
 
+type MediaItem = {
+  id: string;
+  bucket?: string | null;
+  path?: string | null;
+  externalUrl?: string | null;
+  altText?: string | null;
+  isPrimary?: boolean;
+};
+
 type ProductDetail = {
   product: {
     id: string;
@@ -20,14 +29,7 @@ type ProductDetail = {
     priceCents: number;
     category?: string | null;
   };
-  media?: {
-    id: string;
-    bucket?: string | null;
-    path?: string | null;
-    externalUrl?: string | null;
-    altText?: string | null;
-    isPrimary?: boolean;
-  }[];
+  media?: MediaItem[];
   colors?: { name: string; imageUrl?: string | null }[];
   sizes?: string[];
   availability?: {
@@ -44,7 +46,7 @@ type ProductDetail = {
 
 function mediaPublicUrl(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  media?: ProductDetail["media"] extends Array<infer T> ? T : never,
+  media?: MediaItem,
 ) {
   if (!media) return null;
   if (media.externalUrl) return media.externalUrl;

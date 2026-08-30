@@ -10,6 +10,7 @@ const nav = [
   ["/admin/members", "Members"],
   ["/admin/products", "Products"],
   ["/admin/templates", "Templates"],
+  ["/admin/vendors", "Vendors"],
   ["/admin/branding", "Branding"],
   ["/admin/media", "Media"],
   ["/admin/orders", "Orders"],

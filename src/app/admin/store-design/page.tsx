@@ -102,14 +102,17 @@ export default async function StoreDesignPage({
       </section>
 
       <section className="admin-store-selector">
-        <label className="admin-field">
-          <span>Store</span>
-          <select defaultValue={requestedStoreId}>
-            {stores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
+        <form method="get" action="/admin/store-design" className="admin-store-select-form">
+          <label className="admin-field">
+            <span>Store</span>
+            <select name="store" defaultValue={requestedStoreId}>
+              {stores.map((store) => (
+                <option key={store.id} value={store.id}>{store.name}</option>
+              ))}
+            </select>
+          </label>
+          <button type="submit">Load Store</button>
+        </form>
         <div className="admin-store-selector__links">
           {stores.map((store) => (
             <Link

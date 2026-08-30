@@ -141,7 +141,7 @@ export async function updateProduct(formData: FormData) {
 
   const { data: current, error: currentError } = await supabase
     .from("products")
-    .select("slug,stores(slug)")
+    .select("slug,stores:stores!products_store_id_fkey(slug)")
     .eq("id", input.id)
     .single();
 
@@ -211,7 +211,7 @@ export async function createVariant(formData: FormData) {
 
   const { data: product, error: productError } = await supabase
     .from("products")
-    .select("id,organization_id,slug,stores(slug)")
+    .select("id,organization_id,slug,stores:stores!products_store_id_fkey(slug)")
     .eq("id", input.productId)
     .single();
 

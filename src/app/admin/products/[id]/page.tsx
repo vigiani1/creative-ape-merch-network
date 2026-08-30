@@ -3,8 +3,15 @@ import { notFound } from "next/navigation";
 import { ProductEditorForm } from "@/components/admin/product-editor-form";
 import { requireSuperAdmin } from "@/lib/auth";
 
-export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProductEditPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string,string|string[]|undefined>>;
+}) {
   const { id } = await params;
+  const query = await searchParams;
   const { supabase } = await requireSuperAdmin();
 
   const [{ data: editorData, error: editorError }, { data: setupData, error: setupError }] = await Promise.all([
@@ -37,6 +44,13 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
           <Link href="/admin/products" className="admin-secondary-action">Back to Products</Link>
         </div>
       </section>
+
+      {query.saved === "1" || query.created === "1" ? (
+        <div className="admin-save-success" role="status">
+          <strong>{query.created === "1" ? "Product created successfully." : "Product saved successfully."}</strong>
+          <span>Your changes are live in the admin record.</span>
+        </div>
+      ) : null}
 
       <ProductEditorForm editor={editor} setup={(setupData ?? {}) as never} />
     </div>

@@ -2,6 +2,12 @@ import { requireOrganizationMembership } from "@/lib/auth";
 
 type Search = { q?: string; category?: string };
 
+
+function metadataVariants(value: unknown): unknown[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  const variants = (value as Record<string, unknown>).variants;
+  return Array.isArray(variants) ? variants : [];
+}
 export default async function PortalProductLibraryPage({ searchParams }: { searchParams: Promise<Search> }) {
   const params = await searchParams;
   const q = (params.q ?? "").trim().toLowerCase();
@@ -53,7 +59,7 @@ export default async function PortalProductLibraryPage({ searchParams }: { searc
         {(items ?? []).map((item) => {
           const org = Array.isArray(item.organizations) ? item.organizations[0] : item.organizations;
           const store = Array.isArray(item.stores) ? item.stores[0] : item.stores;
-          const variants = Array.isArray((item.search_metadata as any)?.variants) ? (item.search_metadata as any).variants : [];
+          const variants = metadataVariants(item.search_metadata);
           return (
             <article key={item.id} className="rounded-2xl border border-black/10 bg-white p-5">
               <div className="flex items-start justify-between gap-3">

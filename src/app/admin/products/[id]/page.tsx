@@ -1,141 +1,44 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ProductOptionEditor } from "@/components/admin/product-option-editor";
-import { updateProduct } from "../actions";
+import { ProductEditorForm } from "@/components/admin/product-editor-form";
 import { requireSuperAdmin } from "@/lib/auth";
 
 export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase } = await requireSuperAdmin();
 
-  const { data: product, error } = await supabase
-    .from("products")
-    .select("id,organization_id,name,slug,description,sku,category,status,retail_price,production_cost,default_revenue_share_rate,featured,vendor_id,vendor_part_number,inventory_quantity,stores:stores!products_store_id_fkey(slug)")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error || !product) notFound();
-
-  const [
-    { data: variants, error: variantsError },
-    { data: colors, error: colorsError },
-    { data: vendors, error: vendorsError },
-    { data: assets, error: assetsError },
-  ] = await Promise.all([
-    supabase
-      .from("product_variants")
-      .select("size,color")
-      .eq("product_id", id)
-      .eq("managed_by_option_editor", true)
-      .eq("show_on_card", true)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("product_color_options")
-      .select("id,color_name,image_url,display_order")
-      .eq("product_id", id)
-      .eq("active", true)
-      .order("display_order"),
-    supabase.from("vendors").select("id,name").eq("active", true).order("name"),
-    supabase
-      .from("media_assets")
-      .select("id,title,file_name,storage_path,scope,organization_id,media_type")
-      .or(`scope.eq.master,organization_id.eq.${product.organization_id}`)
-      .eq("media_type", "image")
-      .order("created_at", { ascending: false }),
+  const [{ data: editorData, error: editorError }, { data: setupData, error: setupError }] = await Promise.all([
+    supabase.rpc("get_admin_product_editor_v2", { target_product_id: id }),
+    supabase.rpc("get_admin_merchandising_setup_v2", { target_organization_id: undefined }),
   ]);
 
-  if (variantsError || colorsError || vendorsError || assetsError) {
-    throw new Error("Unable to load product options.");
-  }
+  if (editorError || !editorData) notFound();
+  if (setupError) throw new Error("Unable to load merchandising setup.");
 
-  const initialSizes = [...new Set((variants ?? []).map((variant) => variant.size).filter((value): value is string => Boolean(value)))];
-  const mediaUrls = (assets ?? []).map((asset) => ({
-    id: asset.id,
-    label: asset.title || asset.file_name,
-    url: supabase.storage.from("media-library").getPublicUrl(asset.storage_path).data.publicUrl,
-  }));
+  const editor = editorData as {
+    product: { id:string; name:string; description?:string|null; sku?:string|null; categoryId?:string|null; priceCents:number; costCents:number; status:string; featured:boolean; organizationId:string };
+    sizes?: Array<{name:string;active:boolean;displayOrder:number}>;
+    colors?: Array<{name:string;active:boolean;imageUrl?:string|null;displayOrder:number}>;
+    inventory?: Array<{id?:string;size?:string|null;color?:string|null;quantity?:number|null;sku?:string|null;priceOverrideCents?:number|null}>;
+    media?: unknown[];
+    stores?: Array<{id:string;name:string;isPrimary?:boolean}>;
+    collections?: Array<{id:string;name:string}>;
+  };
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
-      <div><Link href="/admin/products" className="text-sm font-semibold underline">Back to products</Link></div>
-
-      <form action={updateProduct} className="grid gap-4 rounded-2xl border border-black/10 bg-white p-6">
-        <input type="hidden" name="id" value={product.id} />
-        <h1 className="text-2xl font-black">Edit product</h1>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-semibold">Name
-            <input name="name" defaultValue={product.name} required maxLength={160} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Slug
-            <input name="slug" defaultValue={product.slug} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">SKU
-            <input name="sku" defaultValue={product.sku ?? ""} maxLength={80} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Category
-            <input name="category" defaultValue={product.category ?? ""} maxLength={80} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Vendor
-            <select name="vendorId" defaultValue={product.vendor_id ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal">
-              <option value="">No vendor</option>
-              {(vendors ?? []).map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
-            </select>
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Vendor part number
-            <input name="vendorPartNumber" defaultValue={product.vendor_part_number ?? ""} maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
+    <div className="admin-page">
+      <section className="admin-page-head">
+        <div>
+          <p className="admin-kicker">Products</p>
+          <h2>{editor.product.name}</h2>
+          <p>Edit merchandising, customer choices, inventory, and publishing in one place.</p>
         </div>
-
-        <label className="grid gap-2 text-sm font-semibold">Description
-          <textarea name="description" defaultValue={product.description ?? ""} rows={5} maxLength={2000} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-        </label>
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="grid gap-2 text-sm font-semibold">Retail $
-            <input name="retailPrice" type="number" min="0" step="0.01" defaultValue={(product.retail_price / 100).toFixed(2)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Production cost $
-            <input name="productionCost" type="number" min="0" step="0.01" defaultValue={(product.production_cost / 100).toFixed(2)} required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Revenue share %
-            <input name="revenueShareRate" type="number" min="0" max="100" step="0.01" defaultValue={product.default_revenue_share_rate ?? ""} className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">Status
-            <select name="status" defaultValue={product.status} className="rounded-xl border border-black/15 px-4 py-3 font-normal">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-          </label>
+        <div className="admin-page-actions">
+          <Link href="/admin/products" className="admin-secondary-action">Back to Products</Link>
         </div>
+      </section>
 
-        <label className="flex items-center gap-3 text-sm font-semibold">
-          <input name="featured" type="checkbox" defaultChecked={product.featured} className="h-4 w-4" /> Featured product
-        </label>
-
-        <button type="submit" className="w-fit rounded-xl bg-black px-5 py-3 font-bold text-white">Save product</button>
-      </form>
-
-      <ProductOptionEditor
-        productId={product.id}
-        initialSizes={initialSizes}
-        initialColors={(colors ?? []).map((color) => ({
-          id: color.id,
-          name: color.color_name,
-          imageUrl: color.image_url ?? "",
-        }))}
-        initialQuantity={product.inventory_quantity}
-        mediaUrls={mediaUrls}
-      />
+      <ProductEditorForm editor={editor} setup={(setupData ?? {}) as never} />
     </div>
   );
 }

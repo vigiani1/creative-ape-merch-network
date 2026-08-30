@@ -65,7 +65,7 @@ export default async function PortalStoresPage() {
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {store.status === "published" ? (
-                  <Link href={`/shop/${store.slug}`} target="_blank" className="rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Open storefront</Link>
+                  <Link href={`/shop/${store.slug}`} target="_blank" className="portal-open-storefront rounded-xl bg-black px-4 py-2.5 text-sm font-bold">Open storefront</Link>
                 ) : (
                   <span className="text-sm text-black/45">This storefront is not published yet.</span>
                 )}

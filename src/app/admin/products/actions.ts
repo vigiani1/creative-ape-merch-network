@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireSuperAdmin } from "@/lib/auth";
+import { requireSuperAdmin, requireUser } from "@/lib/auth";
 
 const CreateProduct = z.object({
   storeId: z.string().uuid(),
@@ -309,7 +309,7 @@ const ProductOptionEditorInput = z.object({
 });
 
 export async function saveProductOptions(formData: FormData) {
-  const { supabase } = await requireSuperAdmin();
+  const { supabase } = await requireUser();
   const input = ProductOptionEditorInput.parse({
     productId: formData.get("productId"),
     sizesJson: String(formData.get("sizesJson") ?? "[]"),

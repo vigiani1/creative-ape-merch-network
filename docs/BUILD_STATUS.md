@@ -75,3 +75,30 @@ Next storefront work:
 4. Connect the cart/checkout UI to the new checkout-intent Edge Function.
 5. Replace legacy full cart page presentation with the revised checkout handoff.
 6. Run accessibility, responsive, and visual QA before merging the branch.
+
+
+## QA and refinement checkpoint (2026-08-30)
+Branch: `storefront-blueprint-v1`
+
+Release-oriented QA/refinement completed:
+- Verified the redesigned admin styling deployment passes Vercel.
+- Added global loading, error recovery, and 404 states.
+- Added an admin loading skeleton.
+- Added keyboard skip navigation and visible focus states.
+- Added reduced-motion handling for new loading animations.
+- Redirected retired admin routes so old bookmarks no longer expose legacy UI:
+  - `/admin/onboarding` -> `/admin/products/new`
+  - `/admin/library` -> `/admin/products`
+  - `/admin/categories` -> `/admin/products/taxonomy`
+  - `/admin/branding` -> `/admin/store-design`
+  - `/admin/layouts` -> `/admin/store-design`
+  - `/admin/fulfillment` -> `/admin/orders`
+- Added a real redesigned `/admin/settings` workspace so Settings no longer falls through to the old generic placeholder.
+- QA discovered and fixed a Store Design interaction bug where the store select visually changed but did not navigate; it now submits the selected store correctly.
+- Runtime error check returned no project runtime errors in the inspected QA window.
+- Vercel continues to show a Node engine warning only: the repository pins Node 22.x, so the project-level Node 24 setting is ignored. This is informational and not a build failure.
+
+Current QA posture:
+- Core storefront and core admin routes compile.
+- No new database architecture was introduced during QA.
+- Remaining work should favor visual walkthrough, responsive inspection, real merchant task testing, and checkout/payment configuration validation over new feature expansion.

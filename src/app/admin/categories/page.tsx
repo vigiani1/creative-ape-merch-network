@@ -2,6 +2,7 @@ import { requireSuperAdmin } from "@/lib/auth";
 import {
   createProductCategory,
   createProductCategoryField,
+  createStandardCategory,
   deleteProductCategoryField,
   updateProductCategory,
   updateProductCategoryField,
@@ -29,34 +30,53 @@ export default async function ProductCategoriesPage() {
         <p className="text-sm font-semibold text-black/45">Onboarding rules</p>
         <h1 className="mt-1 text-3xl font-black">Product categories</h1>
         <p className="mt-2 max-w-4xl text-sm text-black/55">
-          Define exactly what appears during onboarding. Category fields can be required, optional, hidden, Super Admin only, grouped, ordered, and configured as text, number, select, checkbox, or textarea inputs.
+          Use standard presets for normal store products. Open a category only when you need to adjust its option behavior or advanced product-detail fields.
         </p>
       </div>
 
       <section className="rounded-2xl border border-black/10 bg-white p-6">
-        <h2 className="text-2xl font-black">Create category</h2>
-        <form action={createProductCategory} className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-semibold">Name<input name="name" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
-          <label className="grid gap-2 text-sm font-semibold">Slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
-          <label className="grid gap-2 text-sm font-semibold md:col-span-2">Description<textarea name="description" rows={2} className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
-          <div className="rounded-xl bg-neutral-50 p-4">
-            <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesVariantGroup" type="checkbox" /> Use style / variant group</label>
-            <input name="variantGroupLabel" defaultValue="Style" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-            <input name="defaultVariantGroups" placeholder="Defaults: Fitted, Snapback, Flexfit" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-          </div>
-          <div className="rounded-xl bg-neutral-50 p-4">
-            <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesSize" type="checkbox" /> Use size</label>
-            <input name="sizeLabel" defaultValue="Size" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-            <input name="defaultSizes" placeholder="Defaults: S, M, L, XL, 2XL" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-          </div>
-          <div className="rounded-xl bg-neutral-50 p-4">
-            <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesColor" type="checkbox" /> Use color</label>
-            <input name="colorLabel" defaultValue="Color" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-            <input name="defaultColors" placeholder="Optional default colors" className="mt-3 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm" />
-          </div>
-          <label className="flex items-center gap-3 text-sm font-semibold"><input name="active" type="checkbox" defaultChecked /> Active</label>
-          <button className="w-fit rounded-xl bg-black px-5 py-3 font-bold text-white">Create category</button>
+        <p className="text-sm font-semibold text-black/45">Quick setup</p>
+        <h2 className="mt-1 text-2xl font-black">Create a standard category</h2>
+        <p className="mt-2 max-w-3xl text-sm text-black/55">Start from a familiar ecommerce preset. You can fine-tune it later only if you need something unusual.</p>
+        <form action={createStandardCategory} className="mt-5 grid gap-4 md:grid-cols-3">
+          <label className="grid gap-2 text-sm font-semibold">Category name<input name="name" required placeholder="T-Shirts" className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="t-shirts" className="rounded-xl border border-black/15 px-4 py-3 font-normal" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Preset
+            <select name="preset" defaultValue="apparel" className="rounded-xl border border-black/15 px-4 py-3 font-normal">
+              <option value="apparel">Apparel · Size + Color</option>
+              <option value="headwear">Headwear · Style + Size + Color</option>
+              <option value="drinkware">Drinkware · Capacity + Color</option>
+              <option value="simple">Simple product · No options</option>
+            </select>
+          </label>
+          <button className="w-fit rounded-xl bg-black px-5 py-3 font-bold text-white md:col-span-3">Create standard category</button>
         </form>
+
+        <details className="mt-6 rounded-xl bg-neutral-50 p-4">
+          <summary className="cursor-pointer text-sm font-bold">Advanced custom category setup</summary>
+          <form action={createProductCategory} className="mt-5 grid gap-4 md:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold">Name<input name="name" required className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+            <label className="grid gap-2 text-sm font-semibold">Slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+            <label className="grid gap-2 text-sm font-semibold md:col-span-2">Description<textarea name="description" rows={2} className="rounded-xl border border-black/15 bg-white px-4 py-3 font-normal" /></label>
+            <div className="rounded-xl bg-white p-4">
+              <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesVariantGroup" type="checkbox" /> Use style / variant group</label>
+              <input name="variantGroupLabel" defaultValue="Style" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+              <input name="defaultVariantGroups" placeholder="Defaults: Fitted, Snapback, Flexfit" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesSize" type="checkbox" /> Use size</label>
+              <input name="sizeLabel" defaultValue="Size" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+              <input name="defaultSizes" placeholder="Defaults: Small, Medium, Large, XL" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <label className="flex items-center gap-3 text-sm font-semibold"><input name="usesColor" type="checkbox" /> Use color</label>
+              <input name="colorLabel" defaultValue="Color" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+              <input name="defaultColors" placeholder="Optional defaults" className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm" />
+            </div>
+            <label className="flex items-center gap-3 text-sm font-semibold"><input name="active" type="checkbox" defaultChecked /> Active</label>
+            <button className="w-fit rounded-xl border border-black/15 px-5 py-3 font-bold">Create custom category</button>
+          </form>
+        </details>
       </section>
 
       {(categories ?? []).map((category) => {

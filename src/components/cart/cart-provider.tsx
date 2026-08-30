@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type CartItem = {
   productId: string;
+  variantId?: string | null;
+  variantLabel?: string;
   storeSlug: string;
   name: string;
   unitPrice: number;
@@ -15,13 +17,17 @@ type CartContextValue = {
   itemCount: number;
   subtotal: number;
   addItem: (item: Omit<CartItem, "quantity">) => void;
-  setQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  setQuantity: (productId: string, variantId: string | null | undefined, quantity: number) => void;
+  removeItem: (productId: string, variantId?: string | null) => void;
   clear: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "creative-ape-merch-cart";
+
+function sameLine(a: Pick<CartItem, "productId" | "variantId">, b: Pick<CartItem, "productId" | "variantId">) {
+  return a.productId === b.productId && (a.variantId ?? null) === (b.variantId ?? null);
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -31,7 +37,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const hydrationTimer = window.setTimeout(() => {
       try {
         const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) setItems(JSON.parse(raw) as CartItem[]);
+        if (raw) {
+          const parsed = JSON.parse(raw) as CartItem[];
+          setItems(parsed.map((item) => ({ ...item, variantId: item.variantId ?? null })));
+        }
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       } finally {
@@ -52,17 +61,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     subtotal: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
     addItem(item) {
       setItems((current) => {
-        const existing = current.find((entry) => entry.productId === item.productId && entry.storeSlug === item.storeSlug);
-        if (existing) return current.map((entry) => entry === existing ? { ...entry, quantity: Math.min(entry.quantity + 1, 25) } : entry);
-        const otherStoreItems = current.filter((entry) => entry.storeSlug === item.storeSlug);
-        return [...otherStoreItems, { ...item, quantity: 1 }];
+        const existing = current.find((entry) => sameLine(entry, item));
+        if (existing) {
+          return current.map((entry) =>
+            sameLine(entry, item) ? { ...entry, quantity: Math.min(entry.quantity + 1, 25) } : entry
+          );
+        }
+        const sameStoreItems = current.filter((entry) => entry.storeSlug === item.storeSlug);
+        return [...sameStoreItems, { ...item, variantId: item.variantId ?? null, quantity: 1 }];
       });
     },
-    setQuantity(productId, quantity) {
-      setItems((current) => current.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, Math.min(quantity, 25)) } : item));
+    setQuantity(productId, variantId, quantity) {
+      setItems((current) => current.map((item) =>
+        sameLine(item, { productId, variantId })
+          ? { ...item, quantity: Math.max(1, Math.min(quantity, 25)) }
+          : item
+      ));
     },
-    removeItem(productId) {
-      setItems((current) => current.filter((item) => item.productId !== productId));
+    removeItem(productId, variantId) {
+      setItems((current) => current.filter((item) => !sameLine(item, { productId, variantId })));
     },
     clear() { setItems([]); },
   }), [items]);

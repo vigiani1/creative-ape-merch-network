@@ -27,9 +27,9 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
   if (orderError || !order) notFound();
 
   const [{ data: items, error: itemError }, { data: events, error: eventError }, { data: notes, error: notesError }] = await Promise.all([
-    (supabase.rpc as any)("get_member_order_items", { target_order_id: order.id }),
-    (supabase.rpc as any)("get_member_fulfillment_events", { target_order_id: order.id }),
-    (supabase.rpc as any)("get_member_order_notes", { target_order_id: order.id }),
+    supabase.rpc("get_member_order_items", { target_order_id: order.id }),
+    supabase.rpc("get_member_fulfillment_events", { target_order_id: order.id }),
+    supabase.rpc("get_member_order_notes", { target_order_id: order.id }),
   ]);
 
   if (itemError || eventError || notesError) throw new Error("Unable to load order details.");
@@ -56,7 +56,7 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
       <section className="rounded-2xl border border-black/10 bg-white p-6">
         <p className="text-sm font-semibold text-black/45">Order items</p>
         <div className="mt-5 grid gap-4">
-          {(items ?? []).map((item: any) => (
+          {(items ?? []).map((item) => (
             <div key={item.id} className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-black/10 p-5">
               <div>
                 <h2 className="font-black">{item.name_snapshot}</h2>
@@ -74,7 +74,7 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
       <section className="rounded-2xl border border-black/10 bg-white p-6">
         <p className="text-sm font-semibold text-black/45">Fulfillment history</p>
         <div className="mt-5 grid gap-4">
-          {(events ?? []).map((event: any) => (
+          {(events ?? []).map((event) => (
             <div key={event.id} className="border-l-2 border-black/15 pl-4">
               <p className="font-bold capitalize">{event.status}</p>
               <p className="text-xs text-black/45">{new Date(event.created_at).toLocaleString("en-US")}</p>
@@ -87,7 +87,7 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
       <section className="rounded-2xl border border-black/10 bg-white p-6">
         <p className="text-sm font-semibold text-black/45">Organization notes</p>
         <div className="mt-5 grid gap-4">
-          {(notes ?? []).map((note: any) => (
+          {(notes ?? []).map((note) => (
             <div key={note.id} className="rounded-xl border border-black/10 p-4">
               <p className="whitespace-pre-line text-sm">{note.note}</p>
               <p className="mt-2 text-xs text-black/40">{new Date(note.created_at).toLocaleString("en-US")}</p>

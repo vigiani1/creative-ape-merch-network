@@ -84,6 +84,9 @@ export async function updateStore(formData: FormData) {
     title: String(formData.get("title") ?? "") || undefined,
     description: String(formData.get("description") ?? "") || undefined,
     status: formData.get("status"),
+    availabilityStatus: formData.get("availabilityStatus"),
+    startsAt: String(formData.get("startsAt") ?? "") || undefined,
+    endsAt: String(formData.get("endsAt") ?? "") || undefined,
   });
 
   const { data: existing, error: existingError } = await supabase

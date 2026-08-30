@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 type Org = { id: string; name: string; number?: number };
 type Asset = {
@@ -16,11 +15,8 @@ type Asset = {
   storage_path: string;
   alt_text: string | null;
   tags: string[];
+  publicUrl: string;
 };
-
-function safeName(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
-}
 
 export function MediaLibraryEditor({
   organizations,
@@ -31,7 +27,6 @@ export function MediaLibraryEditor({
   assets: Asset[];
   allowMaster: boolean;
 }) {
-  const supabase = createClient();
   const router = useRouter();
   const [scope, setScope] = useState<"master" | "organization">(allowMaster ? "master" : "organization");
   const [organizationId, setOrganizationId] = useState(organizations[0]?.id ?? "");
@@ -51,67 +46,36 @@ export function MediaLibraryEditor({
     });
   }, [assets, organizationId, query, scope]);
 
-  function publicUrl(path: string) {
-    return supabase.storage.from("media-library").getPublicUrl(path).data.publicUrl;
-  }
-
   async function upload(file: File) {
-    if (scope === "organization" && !organizationId) {
-      setMessage("Choose an organization first.");
-      return;
-    }
-
     setBusy(true);
     setMessage(null);
 
-    const folder = scope === "master" ? "master" : organizationId;
-    const path = `${folder}/${crypto.randomUUID()}-${safeName(file.name)}`;
-    const mediaType = file.type.startsWith("video/") ? "video" : file.type.startsWith("image/") ? "image" : "file";
+    const body = new FormData();
+    body.set("file", file);
+    body.set("scope", scope);
+    if (organizationId) body.set("organizationId", organizationId);
 
-    const { error: uploadError } = await supabase.storage.from("media-library").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-    if (uploadError) {
-      setBusy(false);
-      setMessage(uploadError.message);
-      return;
-    }
-
-    const { error: rowError } = await supabase.from("media_assets").insert({
-      organization_id: scope === "organization" ? organizationId : null,
-      scope,
-      media_type: mediaType,
-      title: file.name.replace(/\.[^.]+$/, ""),
-      file_name: file.name,
-      mime_type: file.type || null,
-      storage_path: path,
-      alt_text: file.name.replace(/\.[^.]+$/, ""),
-      tags: [],
-      is_public: true,
-    });
-
-    if (rowError) {
-      await supabase.storage.from("media-library").remove([path]);
-      setBusy(false);
-      setMessage(rowError.message);
-      return;
-    }
+    const response = await fetch("/api/admin/media-upload", { method: "POST", body });
+    const payload = await response.json() as { error?: string };
 
     setBusy(false);
-    setMessage("Added to Media Library.");
-    router.refresh();
+    setMessage(response.ok ? "Added to Media Library." : payload.error || "Upload failed.");
+    if (response.ok) router.refresh();
   }
 
   async function remove(asset: Asset) {
     setBusy(true);
     setMessage(null);
-    const { error } = await supabase.from("media_assets").delete().eq("id", asset.id);
-    if (!error) await supabase.storage.from("media-library").remove([asset.storage_path]);
+    const response = await fetch("/api/admin/media-delete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: asset.id, storagePath: asset.storage_path }),
+    });
+    const payload = await response.json() as { error?: string };
+
     setBusy(false);
-    setMessage(error ? error.message : "Media removed.");
-    if (!error) router.refresh();
+    setMessage(response.ok ? "Media removed." : payload.error || "Unable to remove media.");
+    if (response.ok) router.refresh();
   }
 
   return (
@@ -147,11 +111,12 @@ export function MediaLibraryEditor({
           {busy ? "Working…" : "Upload Media"}
           <input
             type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/webm,application/pdf"
+            accept="image/png,image/jpeg,image/webp,image/gif"
             disabled={busy}
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) void upload(file);
+              event.currentTarget.value = "";
             }}
           />
         </label>
@@ -160,33 +125,30 @@ export function MediaLibraryEditor({
       {message ? <p className="admin-media-message">{message}</p> : null}
 
       <section className="admin-media-grid">
-        {filtered.map((asset) => {
-          const url = publicUrl(asset.storage_path);
-          return (
-            <article key={asset.id} className="admin-media-card">
-              <div className="admin-media-card__preview">
-                {asset.media_type === "video" ? (
-                  <video src={url} controls />
-                ) : asset.media_type === "image" ? (
-                  <img src={url} alt={asset.alt_text ?? ""} />
-                ) : (
-                  <div className="admin-media-card__file">{asset.file_name}</div>
-                )}
-                <span>{asset.media_type}</span>
+        {filtered.map((asset) => (
+          <article key={asset.id} className="admin-media-card">
+            <div className="admin-media-card__preview">
+              {asset.media_type === "video" ? (
+                <video src={asset.publicUrl} controls />
+              ) : asset.media_type === "image" ? (
+                <img src={asset.publicUrl} alt={asset.alt_text ?? ""} />
+              ) : (
+                <div className="admin-media-card__file">{asset.file_name}</div>
+              )}
+              <span>{asset.media_type}</span>
+            </div>
+            <div className="admin-media-card__body">
+              <div>
+                <h3>{asset.title || asset.file_name}</h3>
+                <p>{asset.file_name}</p>
               </div>
-              <div className="admin-media-card__body">
-                <div>
-                  <h3>{asset.title || asset.file_name}</h3>
-                  <p>{asset.file_name}</p>
-                </div>
-                <div className="admin-media-card__actions">
-                  <button type="button" onClick={() => navigator.clipboard.writeText(url)}>Copy URL</button>
-                  <button type="button" disabled={busy} onClick={() => void remove(asset)}>Remove</button>
-                </div>
+              <div className="admin-media-card__actions">
+                <button type="button" onClick={() => navigator.clipboard.writeText(asset.publicUrl)}>Copy URL</button>
+                <button type="button" disabled={busy} onClick={() => void remove(asset)}>Remove</button>
               </div>
-            </article>
-          );
-        })}
+            </div>
+          </article>
+        ))}
       </section>
 
       {!filtered.length ? (

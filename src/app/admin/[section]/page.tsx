@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-const sections = new Set(["organizations", "stores", "members", "products", "templates", "branding", "media", "orders", "fulfillment", "reports", "settings"]);
+const sections = new Set(["organizations", "stores", "members", "products", "templates", "vendors", "branding", "media", "orders", "fulfillment", "reports", "settings"]);
 
 export default async function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;

@@ -2,105 +2,85 @@ import Link from "next/link";
 import { createOrganization } from "./actions";
 import { requireSuperAdmin } from "@/lib/auth";
 
-function formatType(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+type Organization = {
+  id: string;
+  number?: number | null;
+  name: string;
+  slug: string;
+  type: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  storeCount: number;
+  productCount: number;
+  orderCount: number;
+};
+
+function titleCase(value: string) {
+  return value.replaceAll("_"," ").replace(/\b\w/g,(letter)=>letter.toUpperCase());
 }
 
 export default async function OrganizationsPage() {
   const { supabase } = await requireSuperAdmin();
-  const { data: organizations, error } = await supabase
-    .from("organizations")
-    .select("id,name,slug,organization_number,organization_type,status,default_revenue_share_rate,created_at")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc("get_admin_organizations_v1", { search_query: undefined });
 
   if (error) throw new Error("Unable to load organizations.");
 
-  return (
-    <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
-      <section className="rounded-2xl border border-black/10 bg-white p-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-black/45">Tenants</p>
-            <h2 className="mt-1 text-2xl font-black">Organizations</h2>
-          </div>
-          <p className="text-sm text-black/50">{organizations?.length ?? 0} total</p>
-        </div>
+  const organizations=(data ?? []) as Organization[];
 
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-sm">
-            <thead className="border-b border-black/10 text-black/45">
-              <tr>
-                <th className="py-3 pr-4 font-semibold">Org #</th>\n                <th className="py-3 pr-4 font-semibold">Organization</th>
-                <th className="py-3 pr-4 font-semibold">Type</th>
-                <th className="py-3 pr-4 font-semibold">Status</th>
-                <th className="py-3 pr-4 font-semibold">Default share</th>
-                <th className="py-3 pr-4 font-semibold">Store slug base</th>
-                <th className="py-3 font-semibold">Manage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(organizations ?? []).map((org) => (
-                <tr key={org.id} className="border-b border-black/5 last:border-0">
-                  <td className="py-4 pr-4">
-                    <p className="font-bold">{org.name}</p>
-                    <p className="mt-1 text-xs text-black/45">{org.slug}</p>
-                  </td>
-                  <td className="py-4 pr-4">{formatType(org.organization_type)}</td>
-                  <td className="py-4 pr-4">
-                    <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold">{org.status}</span>
-                  </td>
-                  <td className="py-4 pr-4">{Number(org.default_revenue_share_rate)}%</td>
-                  <td className="py-4 pr-4 font-mono text-xs text-black/55">{org.slug}</td>
-                  <td className="py-4"><Link href={`/admin/organizations/${org.id}`} className="font-semibold underline">Edit</Link></td>
-                </tr>
-              ))}
-              {!organizations?.length && (
-                <tr>
-                  <td colSpan={7} className="py-10 text-center text-black/45">No organizations yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+  return (
+    <div className="admin-page">
+      <section className="admin-page-head">
+        <div>
+          <p className="admin-kicker">Network</p>
+          <h2>Organizations</h2>
+          <p>Schools, teams, businesses, clubs, events, and other storefront owners.</p>
         </div>
       </section>
 
-      <aside className="rounded-2xl border border-black/10 bg-white p-6">
-        <p className="text-sm font-semibold text-black/45">New tenant</p>
-        <h2 className="mt-1 text-2xl font-black">Create organization</h2>
-        <p className="mt-2 text-sm text-black/55">Create the tenant first. A permanent Creative Ape organization number is assigned automatically; stores, products, branding, and member access attach afterward.</p>
+      <div className="admin-split-layout">
+        <section className="admin-panel">
+          <div className="admin-panel__head">
+            <div>
+              <p className="admin-kicker">Directory</p>
+              <h3>{organizations.length} organizations</h3>
+            </div>
+          </div>
 
-        <form action={createOrganization} className="mt-6 grid gap-4">
-          <label className="grid gap-2 text-sm font-semibold">
-            Organization name
-            <input name="name" required minLength={2} maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="Example High School" />
-          </label>
+          <div className="admin-entity-list">
+            {organizations.map((org)=>(
+              <Link key={org.id} href={`/admin/organizations/${org.id}`} className="admin-entity-row">
+                <div className="admin-entity-row__identity">
+                  <strong>{org.name}</strong>
+                  <span>{org.slug}</span>
+                </div>
+                <div><span>Type</span><strong>{titleCase(org.type)}</strong></div>
+                <div><span>Stores</span><strong>{org.storeCount}</strong></div>
+                <div><span>Products</span><strong>{org.productCount}</strong></div>
+                <div><span>Orders</span><strong>{org.orderCount}</strong></div>
+                <span className={`admin-status admin-status--${org.status}`}>{org.status}</span>
+              </Link>
+            ))}
+            {!organizations.length ? <div className="admin-empty">No organizations yet.</div> : null}
+          </div>
+        </section>
 
-          <label className="grid gap-2 text-sm font-semibold">
-            Slug
-            <input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} className="rounded-xl border border-black/15 px-4 py-3 font-normal" placeholder="example-high-school" />
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">
-            Organization type
-            <select name="organizationType" defaultValue="business" className="rounded-xl border border-black/15 px-4 py-3 font-normal">
-              <option value="business">Business</option>
-              <option value="school">School</option>
-              <option value="sports_team">Sports team</option>
-              <option value="club">Club</option>
-              <option value="nonprofit">Nonprofit</option>
-              <option value="event">Event</option>
-              <option value="other">Other</option>
-            </select>
-          </label>
-
-          <label className="grid gap-2 text-sm font-semibold">
-            Default revenue share %
-            <input name="revenueShareRate" type="number" min="0" max="100" step="0.01" defaultValue="20" required className="rounded-xl border border-black/15 px-4 py-3 font-normal" />
-          </label>
-
-          <button type="submit" className="mt-2 rounded-xl bg-black px-5 py-3 font-bold text-white">Create organization</button>
-        </form>
-      </aside>
+        <aside className="admin-panel admin-create-panel">
+          <div className="admin-panel__head">
+            <div>
+              <p className="admin-kicker">New</p>
+              <h3>Create organization</h3>
+            </div>
+          </div>
+          <form action={createOrganization} className="admin-create-form">
+            <label className="admin-field"><span>Name</span><input name="name" required minLength={2} maxLength={120} placeholder="Example High School" /></label>
+            <label className="admin-field"><span>Slug</span><input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120} placeholder="example-high-school" /></label>
+            <label className="admin-field"><span>Type</span><select name="organizationType" defaultValue="business"><option value="business">Business</option><option value="school">School</option><option value="sports_team">Sports team</option><option value="club">Club</option><option value="nonprofit">Nonprofit</option><option value="event">Event</option><option value="other">Other</option></select></label>
+            <label className="admin-field"><span>Default revenue share %</span><input name="revenueShareRate" type="number" min="0" max="100" step="0.01" defaultValue="20" required /></label>
+            <button type="submit" className="admin-primary-action">Create Organization</button>
+          </form>
+        </aside>
+      </div>
     </div>
   );
 }

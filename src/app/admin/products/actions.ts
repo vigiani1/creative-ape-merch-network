@@ -98,3 +98,71 @@ export async function createProduct(formData: FormData) {
   revalidatePath(`/shop/${store.slug}/products/${input.slug}`);
   redirect("/admin/products");
 }
+const UpdateProduct = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(2).max(160),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),
+  description: z.string().trim().max(2000).optional(),
+  sku: z.string().trim().max(80).optional(),
+  category: z.string().trim().max(80).optional(),
+  retailPrice: z.coerce.number().min(0).max(100000),
+  productionCost: z.coerce.number().min(0).max(100000),
+  revenueShareRate: z.union([z.literal(""), z.coerce.number().min(0).max(100)]),
+  status: z.enum(["draft", "published", "archived"]),
+  featured: z.boolean(),
+});
+
+export async function updateProduct(formData: FormData) {
+  const { supabase } = await requireSuperAdmin();
+
+  const input = UpdateProduct.parse({
+    id: formData.get("id"),
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    description: String(formData.get("description") ?? "") || undefined,
+    sku: String(formData.get("sku") ?? "") || undefined,
+    category: String(formData.get("category") ?? "") || undefined,
+    retailPrice: formData.get("retailPrice"),
+    productionCost: formData.get("productionCost"),
+    revenueShareRate: String(formData.get("revenueShareRate") ?? ""),
+    status: formData.get("status"),
+    featured: formData.get("featured") === "on",
+  });
+
+  const { data: current, error: currentError } = await supabase
+    .from("products")
+    .select("slug,stores(slug)")
+    .eq("id", input.id)
+    .single();
+
+  if (currentError || !current) throw new Error("Product not found.");
+
+  const { error } = await supabase
+    .from("products")
+    .update({
+      name: input.name,
+      slug: input.slug,
+      description: input.description ?? null,
+      sku: input.sku ?? null,
+      category: input.category ?? null,
+      retail_price: dollarsToCents(input.retailPrice),
+      production_cost: dollarsToCents(input.productionCost),
+      default_revenue_share_rate: input.revenueShareRate === "" ? null : input.revenueShareRate,
+      status: input.status,
+      featured: input.featured,
+    })
+    .eq("id", input.id);
+
+  if (error) throw new Error(error.code === "23505" ? "That product slug is already used in this store." : "Unable to update product.");
+
+  const store = Array.isArray(current.stores) ? current.stores[0] : current.stores;
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${input.id}`);
+  if (store?.slug) {
+    revalidatePath(`/shop/${store.slug}`);
+    revalidatePath(`/shop/${store.slug}/products/${current.slug}`);
+    revalidatePath(`/shop/${store.slug}/products/${input.slug}`);
+  }
+  redirect("/admin/products");
+}

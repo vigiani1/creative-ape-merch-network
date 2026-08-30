@@ -34,7 +34,8 @@ export default async function StoresPage() {
                 <th className="py-3 pr-4 font-semibold">Organization</th>
                 <th className="py-3 pr-4 font-semibold">Status</th>
                 <th className="py-3 pr-4 font-semibold">Slug</th>
-                <th className="py-3 font-semibold">Public page</th>
+                <th className="py-3 pr-4 font-semibold">Public page</th>
+                <th className="py-3 font-semibold">Manage</th>
               </tr>
             </thead>
             <tbody>
@@ -58,11 +59,12 @@ export default async function StoresPage() {
                         <span className="text-black/35">Not published</span>
                       )}
                     </td>
+                    <td className="py-4"><Link href={`/admin/stores/${store.id}`} className="font-semibold underline">Edit</Link></td>
                   </tr>
                 );
               })}
               {!stores?.length && (
-                <tr><td colSpan={5} className="py-10 text-center text-black/45">No stores yet.</td></tr>
+                <tr><td colSpan={6} className="py-10 text-center text-black/45">No stores yet.</td></tr>
               )}
             </tbody>
           </table>

@@ -35,7 +35,7 @@ export default async function AdminProductLibraryPage({ searchParams }: { search
   const { data: items, error } = await query;
   if (error) throw new Error("Unable to load product library.");
 
-  const categories = [...new Set((categoryRows ?? []).map((row) => row.category).filter(Boolean))].sort();
+  const categories = [...new Set((categoryRows ?? []).map((row) => row.category).filter((value): value is string => Boolean(value)))].sort();
 
   const groups = new Map<string, { orgName: string; orgNumber: number; categories: Map<string, typeof items> }>();
   for (const item of items ?? []) {

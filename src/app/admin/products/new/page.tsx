@@ -10,7 +10,9 @@ type Setup = {
   standardSizes?: string[];
 };
 
-export default async function AddProductPage() {
+export default async function AddProductPage({ searchParams }: { searchParams: Promise<Record<string,string|string[]|undefined>> }) {
+  const query = await searchParams;
+  const selectedStoreId = typeof query.store === "string" ? query.store : undefined;
   const { supabase } = await requireSuperAdmin();
   const { data, error } = await supabase.rpc("get_admin_merchandising_setup_v2", {
     target_organization_id: undefined,
@@ -26,10 +28,10 @@ export default async function AddProductPage() {
           <h2>Add Product</h2>
           <p>One familiar merchandising flow from product basics through publishing.</p>
         </div>
-        <Link href="/admin/products" className="admin-secondary-action">Back to Products</Link>
+        <Link href={selectedStoreId ? `/admin/products?store=${selectedStoreId}` : "/admin/products"} className="admin-secondary-action">Back to Products</Link>
       </section>
 
-      <NewProductForm setup={(data ?? {}) as Setup} />
+      <NewProductForm setup={(data ?? {}) as Setup} selectedStoreId={selectedStoreId} />
     </div>
   );
 }

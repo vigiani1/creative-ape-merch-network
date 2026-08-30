@@ -10,7 +10,7 @@ export default async function OrganizationsPage() {
   const { supabase } = await requireSuperAdmin();
   const { data: organizations, error } = await supabase
     .from("organizations")
-    .select("id,name,slug,organization_type,status,default_revenue_share_rate,created_at")
+    .select("id,name,slug,organization_number,organization_type,status,default_revenue_share_rate,created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error("Unable to load organizations.");
@@ -30,7 +30,7 @@ export default async function OrganizationsPage() {
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead className="border-b border-black/10 text-black/45">
               <tr>
-                <th className="py-3 pr-4 font-semibold">Organization</th>
+                <th className="py-3 pr-4 font-semibold">Org #</th>\n                <th className="py-3 pr-4 font-semibold">Organization</th>
                 <th className="py-3 pr-4 font-semibold">Type</th>
                 <th className="py-3 pr-4 font-semibold">Status</th>
                 <th className="py-3 pr-4 font-semibold">Default share</th>
@@ -56,7 +56,7 @@ export default async function OrganizationsPage() {
               ))}
               {!organizations?.length && (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-black/45">No organizations yet.</td>
+                  <td colSpan={7} className="py-10 text-center text-black/45">No organizations yet.</td>
                 </tr>
               )}
             </tbody>
@@ -67,7 +67,7 @@ export default async function OrganizationsPage() {
       <aside className="rounded-2xl border border-black/10 bg-white p-6">
         <p className="text-sm font-semibold text-black/45">New tenant</p>
         <h2 className="mt-1 text-2xl font-black">Create organization</h2>
-        <p className="mt-2 text-sm text-black/55">Create the tenant first. Stores, products, branding, and member access are attached afterward.</p>
+        <p className="mt-2 text-sm text-black/55">Create the tenant first. A permanent Creative Ape organization number is assigned automatically; stores, products, branding, and member access attach afterward.</p>
 
         <form action={createOrganization} className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm font-semibold">

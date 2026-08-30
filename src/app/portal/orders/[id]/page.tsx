@@ -26,12 +26,13 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
 
   if (orderError || !order) notFound();
 
-  const [{ data: items, error: itemError }, { data: events, error: eventError }] = await Promise.all([
+  const [{ data: items, error: itemError }, { data: events, error: eventError }, { data: notes, error: notesError }] = await Promise.all([
     (supabase.rpc as any)("get_member_order_items", { target_order_id: order.id }),
     (supabase.rpc as any)("get_member_fulfillment_events", { target_order_id: order.id }),
+    (supabase.rpc as any)("get_member_order_notes", { target_order_id: order.id }),
   ]);
 
-  if (itemError || eventError) throw new Error("Unable to load order details.");
+  if (itemError || eventError || notesError) throw new Error("Unable to load order details.");
 
   const isTest = order.order_number.startsWith("TEST-");
 
@@ -83,7 +84,20 @@ export default async function PortalOrderDetailPage({ params }: { params: Promis
         </div>
       </section>
 
-      <p className="text-xs text-black/45">Creative Ape production costs and internal financial ledger entries are intentionally hidden from the organization portal.</p>
+      <section className="rounded-2xl border border-black/10 bg-white p-6">
+        <p className="text-sm font-semibold text-black/45">Organization notes</p>
+        <div className="mt-5 grid gap-4">
+          {(notes ?? []).map((note: any) => (
+            <div key={note.id} className="rounded-xl border border-black/10 p-4">
+              <p className="whitespace-pre-line text-sm">{note.note}</p>
+              <p className="mt-2 text-xs text-black/40">{new Date(note.created_at).toLocaleString("en-US")}</p>
+            </div>
+          ))}
+          {!notes?.length ? <p className="text-sm text-black/45">No notes shared with your organization.</p> : null}
+        </div>
+      </section>
+
+      <p className="text-xs text-black/45">Creative Ape production costs, internal notes, and internal financial ledger entries are intentionally hidden from the organization portal.</p>
     </div>
   );
 }

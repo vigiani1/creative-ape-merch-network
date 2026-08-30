@@ -18,9 +18,10 @@ type ColorRow = {
   imageUrl: string;
 };
 
-export function NewProductForm({ setup }: { setup: Setup }) {
+export function NewProductForm({ setup, selectedStoreId }: { setup: Setup; selectedStoreId?: string }) {
   const organizations = setup.organizations ?? [];
-  const [organizationId, setOrganizationId] = useState(organizations[0]?.id ?? "");
+  const selectedStore = (setup.stores ?? []).find((store) => store.id === selectedStoreId);
+  const [organizationId, setOrganizationId] = useState(selectedStore?.organizationId ?? organizations[0]?.id ?? "");
   const [colors, setColors] = useState<ColorRow[]>([{ id: crypto.randomUUID(), name: "", imageUrl: "" }]);
 
   const stores = useMemo(
@@ -208,7 +209,7 @@ export function NewProductForm({ setup }: { setup: Setup }) {
           </label>
           <label className="admin-field">
             <span>Store</span>
-            <select name="storeId" key={organizationId} defaultValue={stores[0]?.id ?? ""} required>
+            <select name="storeId" key={organizationId} defaultValue={stores.some((store)=>store.id===selectedStoreId) ? selectedStoreId : stores[0]?.id ?? ""} required>
               {stores.map((store) => (
                 <option key={store.id} value={store.id}>{store.name}</option>
               ))}
@@ -256,7 +257,7 @@ export function NewProductForm({ setup }: { setup: Setup }) {
       </section>
 
       <div className="admin-editor-savebar">
-        <a href="/admin/products">Cancel</a>
+        <a href={selectedStoreId ? `/admin/products?store=${selectedStoreId}` : "/admin/products"}>Cancel</a>
         <button type="submit">Create Product</button>
       </div>
     </form>

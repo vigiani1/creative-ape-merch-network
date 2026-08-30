@@ -7,6 +7,7 @@ const nav = [
   ["/admin", "Dashboard"],
   ["/admin/organizations", "Organizations"],
   ["/admin/stores", "Stores"],
+  ["/admin/layouts", "Store Layouts"],
   ["/admin/members", "Members"],
   ["/admin/products", "Products"],
   ["/admin/onboarding", "Product Onboarding"],

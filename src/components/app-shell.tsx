@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "@/app/login/actions";
 
 export type NavItem = { href: string; label: string };
 
@@ -13,6 +14,9 @@ export function AppShell({ title, eyebrow, nav, children }: { title: string; eye
             <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm text-white/75 hover:bg-white/10 hover:text-white">{item.label}</Link>
           ))}
         </nav>
+        <form action={signOut} className="mt-8">
+          <button type="submit" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white">Sign out</button>
+        </form>
       </aside>
       <main className="p-6 md:p-10">
         <div className="mx-auto max-w-7xl">

@@ -1,4 +1,7 @@
 import { AppShell } from "@/components/app-shell";
+import { requireSuperAdmin } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 const nav = [
   ["/admin", "Dashboard"],
@@ -11,6 +14,7 @@ const nav = [
   ["/admin/settings", "Settings"],
 ].map(([href, label]) => ({ href, label }));
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireSuperAdmin();
   return <AppShell title="Creative Ape Admin" eyebrow="Merch Network Control Center" nav={nav}>{children}</AppShell>;
 }

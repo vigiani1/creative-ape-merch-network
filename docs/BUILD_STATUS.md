@@ -1,6 +1,9 @@
 # Build status
 
 ## Validated baseline (2026-08-30)
+- Implemented Supabase email/password sign-in and sign-out with server actions, generic credential errors, safe post-login destinations, and SSR-managed auth cookies.
+- Added server-enforced authorization guards to every `/admin` and `/portal` route. Admin access requires the authenticated user's `profiles.platform_role` to be `super_admin`; portal access requires at least one RLS-visible organization membership, and the helper returns only those organization IDs for future scoped queries.
+- Added proxy-level unauthenticated redirects to `/login` while retaining the protected layouts as the role/membership authorization boundary. Authenticated users without access receive a safe access-denied screen.
 - Installed the pinned dependencies and committed a reproducible npm lockfile.
 - Aligned TypeScript with the version range supported by Next.js 16's ESLint toolchain.
 - Added explicit public Supabase RPC result types so strict TypeScript validation succeeds without pretending that an ungenerated database schema is type-safe.
@@ -13,7 +16,7 @@
 - `npm run lint`, `npm run typecheck`, and `npm run build` pass.
 
 ## Security and architecture concerns intentionally remaining
-- Authentication UI and route/role guards are not implemented. The `/admin` and `/portal` shells contain placeholders only and must not be treated as authorization boundaries; all future data access must remain protected by server checks and RLS.
+- Organization/product CRUD is not implemented. All future portal queries must use the organization IDs returned by the server membership guard and remain protected by RLS; never accept a client-selected organization ID without server validation.
 - Checkout is a test-mode foundation, not a complete commerce flow. It does not create immutable orders, order-item snapshots, or ledger entries before redirecting to Stripe. Do not expose the route outside controlled test environments until that transactional write path exists.
 - The webhook currently verifies and deduplicates events but does not apply payment, refund, order, or ledger state. A later handler must claim/process events transactionally and set `processed_at` only after successful idempotent processing.
 - Storage buckets and tenant-path storage policies have not been created. Do not enable uploads until both exist and have been tested for cross-tenant denial.
@@ -45,4 +48,4 @@ Keep Stripe disconnected for this baseline. When the immutable order/ledger mile
 Create a Stripe **test-mode** webhook endpoint for `/api/stripe/webhook`. Subscribe only to events implemented by the future commerce handler (initially Checkout completion/expiration plus payment and refund events selected by that design), verify signatures, and keep webhook processing idempotent. Do not add live keys, enable live payments, or enable automatic payouts during foundation work.
 
 ## Recommended next implementation task (do not begin yet)
-Connect a disposable/local Supabase project, apply and exercise all migrations with an RLS test matrix (anonymous, organization member/admin, another tenant, and super admin), then implement Supabase Auth sign-in plus server-enforced `/admin` and `/portal` route/role guards. This validates the security boundary before CRUD or commerce work begins.
+Exercise authentication and the deployed RLS policies with a test matrix (anonymous, organization member/admin, another tenant, and super admin), then begin the organization/store/product CRUD milestone with server-validated tenant scoping.

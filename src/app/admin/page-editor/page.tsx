@@ -98,7 +98,7 @@ export default async function PageEditorPage({
               <p>The homepage is permanent. Edit its sections, campaign content, images, and featured merchandising here.</p>
             </div>
             <div className="admin-page-editor-home__actions">
-              <Link href={`/admin/stores/${selectedStore.id}/builder`} className="admin-primary-action">Edit Homepage</Link>
+              <Link href={`/admin/stores/${selectedStore.id}/builder?store=${selectedStore.id}`} className="admin-primary-action">Edit Homepage</Link>
               <Link href={`/shop/${selectedStore.slug}`} target="_blank" className="admin-secondary-action">Preview</Link>
             </div>
           </section>
@@ -127,7 +127,7 @@ export default async function PageEditorPage({
 
                   <div className="admin-page-editor-item__body">
                     <form action={updateStorePage} className="admin-page-editor-form">
-                      <input type="hidden" name="storeId" value={selectedStore.id}/>
+                      <input type="hidden" name="storeId" value={selectedStore.id}/><input type="hidden" name="returnTo" value={`/admin/page-editor?store=${selectedStore.id}`}/>
                       <input type="hidden" name="pageId" value={page.id}/>
                       <label className="admin-field"><span>Page title</span><input name="title" defaultValue={page.title} required/></label>
                       <label className="admin-field"><span>URL slug</span><input name="slug" defaultValue={page.slug} required/></label>
@@ -144,7 +144,7 @@ export default async function PageEditorPage({
 
                       <div className="admin-page-editor-actions">
                         <button className="admin-primary-action">Save Page Settings</button>
-                        <Link href={`/admin/stores/${selectedStore.id}/pages#page-${page.id}`} className="admin-secondary-action">Edit Page Content</Link>
+                        <Link href={`/admin/stores/${selectedStore.id}/pages?store=${selectedStore.id}#page-${page.id}`} className="admin-secondary-action">Edit Page Content</Link>
                         {page.is_enabled ? <Link href={`/shop/${selectedStore.slug}/${page.slug}`} target="_blank" className="admin-secondary-action">Preview</Link> : null}
                       </div>
                     </form>

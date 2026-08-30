@@ -46,5 +46,7 @@ export async function updateFulfillment(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${input.orderId}`);
+  revalidatePath(`/portal/orders/${input.orderId}`);
   revalidatePath("/admin/fulfillment");
 }

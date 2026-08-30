@@ -22,6 +22,8 @@ export function ProductPurchasePanel({
   sizes,
   colors,
   availability,
+  selectedColorExternal,
+  onColorChange,
 }: {
   productId: string;
   storeSlug: string;
@@ -31,10 +33,17 @@ export function ProductPurchasePanel({
   sizes: string[];
   colors: { name: string; imageUrl?: string | null }[];
   availability: Availability[];
+  selectedColorExternal?: string;
+  onColorChange?: (color: string) => void;
 }) {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedColorInternal, setSelectedColorInternal] = useState("");
+  const selectedColor = selectedColorExternal ?? selectedColorInternal;
+  const setSelectedColor = (color: string) => {
+    if (onColorChange) onColorChange(color);
+    else setSelectedColorInternal(color);
+  };
   const [quantity, setQuantity] = useState(1);
 
   const requiresSize = sizes.length > 0;

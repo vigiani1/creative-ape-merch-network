@@ -60,7 +60,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
           <p className="mt-2 max-w-3xl text-sm text-black/55">Create About, Mission, Cause, FAQ, Contact, or custom pages. Each page is made from ordered content sections and can use any reusable asset from the Media Library.</p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/admin/stores/${store.id}/builder`} className="rounded-xl border border-black/15 px-4 py-2.5 text-sm font-bold">Home builder</Link>
+          <Link href={`/admin/stores/${store.id}/builder?store=${store.id}`} className="rounded-xl border border-black/15 px-4 py-2.5 text-sm font-bold">Home builder</Link>
           {store.status==="published" ? <Link href={`/shop/${store.slug}`} target="_blank" className="rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Preview store</Link> : null}
         </div>
       </div>
@@ -74,7 +74,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
         return (
           <section id={`page-${page.id}`} key={page.id} className="rounded-2xl border border-black/10 bg-white p-6">
             <form action={updateStorePage} className="grid gap-3 md:grid-cols-3">
-              <input type="hidden" name="storeId" value={store.id} />
+              <input type="hidden" name="storeId" value={store.id} /><input type="hidden" name="returnTo" value={`/admin/stores/${store.id}/pages?store=${store.id}`} />
               <input type="hidden" name="pageId" value={page.id} />
               <label className="grid gap-1 text-xs font-semibold">Page title<input name="title" defaultValue={page.title} required className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
               <label className="grid gap-1 text-xs font-semibold">URL slug<input name="slug" defaultValue={page.slug} required className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
@@ -103,7 +103,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
                   <details key={section.id} className="rounded-xl bg-neutral-50 p-4">
                     <summary className="cursor-pointer font-bold">{section.position}. {section.section_type.replaceAll("_"," ")}</summary>
                     <form action={updateStorePageSection} className="mt-4 grid gap-3 md:grid-cols-3">
-                      <input type="hidden" name="storeId" value={store.id} />
+                      <input type="hidden" name="storeId" value={store.id} /><input type="hidden" name="returnTo" value={`/admin/stores/${store.id}/pages?store=${store.id}`} />
                       <input type="hidden" name="pageId" value={page.id} />
                       <input type="hidden" name="sectionId" value={section.id} />
                       <label className="grid gap-1 text-xs font-semibold">Section type
@@ -141,7 +141,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
               </div>
 
               <form action={createStorePageSection} className="mt-5 grid gap-3 rounded-xl border border-dashed border-black/20 p-4 md:grid-cols-3">
-                <input type="hidden" name="storeId" value={store.id} />
+                <input type="hidden" name="storeId" value={store.id} /><input type="hidden" name="returnTo" value={`/admin/stores/${store.id}/pages?store=${store.id}`} />
                 <input type="hidden" name="pageId" value={page.id} />
                 <label className="grid gap-1 text-xs font-semibold">Section type<select name="sectionType" defaultValue="story" className="rounded-lg border border-black/15 px-3 py-2 font-normal">{sectionTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
                 <label className="grid gap-1 text-xs font-semibold">Position<input name="position" type="number" defaultValue={(pageSections.length+1)*10} className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
@@ -170,7 +170,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
       <section className="rounded-2xl border border-dashed border-black/20 bg-white p-6">
         <h2 className="text-2xl font-black">Add page</h2>
         <form action={createStorePage} className="mt-5 grid gap-3 md:grid-cols-3">
-          <input type="hidden" name="storeId" value={store.id} />
+          <input type="hidden" name="storeId" value={store.id} /><input type="hidden" name="returnTo" value={`/admin/stores/${store.id}/pages?store=${store.id}`} />
           <label className="grid gap-1 text-xs font-semibold">Title<input name="title" required placeholder="Our Mission" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
           <label className="grid gap-1 text-xs font-semibold">Slug<input name="slug" required placeholder="mission" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
           <label className="grid gap-1 text-xs font-semibold">Type<select name="pageType" defaultValue="mission" className="rounded-lg border border-black/15 px-3 py-2 font-normal"><option value="about">About</option><option value="mission">Mission</option><option value="cause">Cause</option><option value="faq">FAQ</option><option value="contact">Contact</option><option value="custom">Custom</option></select></label>

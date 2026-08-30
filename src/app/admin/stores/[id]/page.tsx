@@ -17,7 +17,7 @@ export default async function StoreEditPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/admin/stores" className="text-sm font-semibold underline">Back to stores</Link>
+      <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/admin/stores" className="text-sm font-semibold underline">Back to stores</Link><Link href={`/admin/stores/${store.id}/builder`} className="rounded-xl bg-black px-4 py-2.5 text-sm font-bold text-white">Open store builder</Link></div>
       <form action={updateStore} className="mt-5 grid gap-4 rounded-2xl border border-black/10 bg-white p-6">
         <input type="hidden" name="id" value={store.id} />
         <h1 className="text-2xl font-black">Edit store</h1>

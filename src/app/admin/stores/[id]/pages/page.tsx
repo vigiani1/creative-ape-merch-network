@@ -9,6 +9,7 @@ import {
   updateStorePageSection,
 } from "./actions";
 import { requireSuperAdmin } from "@/lib/auth";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 const sectionTypes = [
   ["hero","Hero"],["announcement","Announcement"],["story","Story"],["text_image","Text + image"],
@@ -71,7 +72,7 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
       {(pages ?? []).map((page)=>{
         const pageSections=(sections ?? []).filter((section)=>section.page_id===page.id);
         return (
-          <section key={page.id} className="rounded-2xl border border-black/10 bg-white p-6">
+          <section id={`page-${page.id}`} key={page.id} className="rounded-2xl border border-black/10 bg-white p-6">
             <form action={updateStorePage} className="grid gap-3 md:grid-cols-3">
               <input type="hidden" name="storeId" value={store.id} />
               <input type="hidden" name="pageId" value={page.id} />
@@ -118,7 +119,10 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
                       </label>
                       <label className="grid gap-1 text-xs font-semibold">Featured count<input name="featuredCount" type="number" min="1" max="24" defaultValue={setting(section.settings,"featured_count")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
                       <label className="grid gap-1 text-xs font-semibold md:col-span-3">Body<textarea name="body" rows={4} defaultValue={setting(section.settings,"body")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
-                      <label className="grid gap-1 text-xs font-semibold">Image / background media URL<input list="media-library-urls" name="imageUrl" defaultValue={setting(section.settings,"image_url")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
+                      <div className="grid gap-1 text-xs font-semibold">
+                        <span>Image / background</span>
+                        <ImageUploader organizationId={store.organization_id} urlInputName="imageUrl" label="Media Upload" initialUrl={setting(section.settings,"image_url")} />
+                      </div>
                       <label className="grid gap-1 text-xs font-semibold">Video URL<input list="media-library-urls" name="videoUrl" defaultValue={setting(section.settings,"video_url")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
                       <label className="grid gap-1 text-xs font-semibold">General link URL<input name="linkUrl" defaultValue={setting(section.settings,"link_url")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
                       <label className="grid gap-1 text-xs font-semibold">Button label<input name="buttonLabel" defaultValue={setting(section.settings,"button_label")} className="rounded-lg border border-black/15 bg-white px-3 py-2 font-normal" /></label>
@@ -146,7 +150,10 @@ export default async function StorePagesPage({ params }:{ params:Promise<{id:str
                 <label className="grid gap-1 text-xs font-semibold">Alignment<select name="align" defaultValue="left" className="rounded-lg border border-black/15 px-3 py-2 font-normal"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
                 <label className="grid gap-1 text-xs font-semibold">Featured count<input name="featuredCount" type="number" min="1" max="24" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
                 <label className="grid gap-1 text-xs font-semibold md:col-span-3">Body<textarea name="body" rows={3} className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
-                <label className="grid gap-1 text-xs font-semibold">Image/media URL<input list="media-library-urls" name="imageUrl" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
+                <div className="grid gap-1 text-xs font-semibold">
+                  <span>Image / media</span>
+                  <ImageUploader organizationId={store.organization_id} urlInputName="imageUrl" label="Media Upload" />
+                </div>
                 <label className="grid gap-1 text-xs font-semibold">Video URL<input list="media-library-urls" name="videoUrl" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
                 <label className="grid gap-1 text-xs font-semibold">Link URL<input name="linkUrl" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>
                 <label className="grid gap-1 text-xs font-semibold">Button label<input name="buttonLabel" className="rounded-lg border border-black/15 px-3 py-2 font-normal" /></label>

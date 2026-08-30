@@ -72,6 +72,156 @@ export type Database = {
           },
         ]
       }
+      checkout_intents: {
+        Row: {
+          cart_request: Json
+          completed_at: string | null
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_name: string | null
+          discount_cents: number
+          expires_at: string
+          id: string
+          idempotency_key: string
+          order_id: string | null
+          organization_id: string
+          provider: string | null
+          provider_checkout_id: string | null
+          quote_snapshot: Json
+          shipping_address: Json
+          shipping_cents: number
+          status: string
+          store_id: string
+          subtotal_cents: number
+          tax_cents: number
+          total_cents: number
+          updated_at: string
+        }
+        Insert: {
+          cart_request: Json
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          discount_cents?: number
+          expires_at?: string
+          id?: string
+          idempotency_key: string
+          order_id?: string | null
+          organization_id: string
+          provider?: string | null
+          provider_checkout_id?: string | null
+          quote_snapshot: Json
+          shipping_address?: Json
+          shipping_cents?: number
+          status?: string
+          store_id: string
+          subtotal_cents?: number
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          cart_request?: Json
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          discount_cents?: number
+          expires_at?: string
+          id?: string
+          idempotency_key?: string
+          order_id?: string | null
+          organization_id?: string
+          provider?: string | null
+          provider_checkout_id?: string | null
+          quote_snapshot?: Json
+          shipping_address?: Json
+          shipping_cents?: number
+          status?: string
+          store_id?: string
+          subtotal_cents?: number
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_intents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_intents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          collection_type: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          name: string
+          organization_id: string
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collection_type?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          organization_id: string
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_type?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          organization_id?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fulfillment_events: {
         Row: {
           created_at: string
@@ -121,6 +271,84 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      inventory_reservations: {
+        Row: {
+          checkout_intent_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          organization_id: string
+          product_id: string
+          quantity: number
+          status: string
+          store_id: string
+          updated_at: string
+          variant_id: string | null
+        }
+        Insert: {
+          checkout_intent_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          organization_id: string
+          product_id: string
+          quantity: number
+          status?: string
+          store_id: string
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Update: {
+          checkout_intent_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          organization_id?: string
+          product_id?: string
+          quantity?: number
+          status?: string
+          store_id?: string
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reservations_checkout_intent_id_fkey"
+            columns: ["checkout_intent_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -199,6 +427,7 @@ export type Database = {
       media_assets: {
         Row: {
           alt_text: string | null
+          bucket_name: string
           created_at: string
           created_by: string | null
           file_name: string
@@ -216,6 +445,7 @@ export type Database = {
         }
         Insert: {
           alt_text?: string | null
+          bucket_name?: string
           created_at?: string
           created_by?: string | null
           file_name: string
@@ -233,6 +463,7 @@ export type Database = {
         }
         Update: {
           alt_text?: string | null
+          bucket_name?: string
           created_at?: string
           created_by?: string | null
           file_name?: string
@@ -550,11 +781,14 @@ export type Database = {
       organization_product_library: {
         Row: {
           category: string | null
+          category_id: string | null
           created_at: string
           description: string | null
           id: string
           name: string
           organization_id: string
+          primary_image_url: string | null
+          retail_price: number | null
           search_metadata: Json
           search_text: string
           sku: string | null
@@ -568,11 +802,14 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name: string
           organization_id: string
+          primary_image_url?: string | null
+          retail_price?: number | null
           search_metadata?: Json
           search_text?: string
           sku?: string | null
@@ -586,11 +823,14 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name?: string
           organization_id?: string
+          primary_image_url?: string | null
+          retail_price?: number | null
           search_metadata?: Json
           search_text?: string
           sku?: string | null
@@ -603,6 +843,13 @@ export type Database = {
           vendor_part_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_product_library_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_product_library_organization_id_fkey"
             columns: ["organization_id"]
@@ -986,6 +1233,52 @@ export type Database = {
           },
         ]
       }
+      product_collections: {
+        Row: {
+          collection_id: string
+          created_at: string
+          display_order: number
+          organization_id: string
+          product_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          display_order?: number
+          organization_id: string
+          product_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          display_order?: number
+          organization_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_collections_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_collections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_collections_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_color_options: {
         Row: {
           active: boolean
@@ -1040,11 +1333,13 @@ export type Database = {
       product_media: {
         Row: {
           alt_text: string | null
+          bucket_name: string
           created_at: string
           display_order: number
           external_url: string | null
           id: string
           is_primary: boolean
+          media_asset_id: string | null
           media_type: string
           organization_id: string
           product_id: string
@@ -1052,11 +1347,13 @@ export type Database = {
         }
         Insert: {
           alt_text?: string | null
+          bucket_name?: string
           created_at?: string
           display_order?: number
           external_url?: string | null
           id?: string
           is_primary?: boolean
+          media_asset_id?: string | null
           media_type: string
           organization_id: string
           product_id: string
@@ -1064,17 +1361,26 @@ export type Database = {
         }
         Update: {
           alt_text?: string | null
+          bucket_name?: string
           created_at?: string
           display_order?: number
           external_url?: string | null
           id?: string
           is_primary?: boolean
+          media_asset_id?: string | null
           media_type?: string
           organization_id?: string
           product_id?: string
           storage_path?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "product_media_media_asset_id_fkey"
+            columns: ["media_asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_media_organization_id_fkey"
             columns: ["organization_id"]
@@ -1095,6 +1401,215 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      product_option_values: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          id: string
+          metadata: Json
+          option_id: string
+          organization_id: string
+          product_id: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          metadata?: Json
+          option_id: string
+          organization_id: string
+          product_id: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          metadata?: Json
+          option_id?: string
+          organization_id?: string
+          product_id?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_option_values_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "product_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_values_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_values_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_options: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_variant_axis: boolean
+          name: string
+          organization_id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_variant_axis?: boolean
+          name: string
+          organization_id: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_variant_axis?: boolean
+          name?: string
+          organization_id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_options_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_size_options: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          id: string
+          organization_id: string
+          product_id: string
+          size_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          organization_id: string
+          product_id: string
+          size_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          organization_id?: string
+          product_id?: string
+          size_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_size_options_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_size_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_store_assignments: {
+        Row: {
+          created_at: string
+          is_primary: boolean
+          organization_id: string
+          product_id: string
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_primary?: boolean
+          organization_id: string
+          product_id: string
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_primary?: boolean
+          organization_id?: string
+          product_id?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_store_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_store_assignments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_store_assignments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1300,6 +1815,49 @@ export type Database = {
           },
         ]
       }
+      product_variant_option_values: {
+        Row: {
+          created_at: string
+          option_id: string
+          option_value_id: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          option_id: string
+          option_value_id: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          option_id?: string
+          option_value_id?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variant_option_values_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "product_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variant_option_values_option_value_id_fkey"
+            columns: ["option_value_id"]
+            isOneToOne: false
+            referencedRelation: "product_option_values"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variant_option_values_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_variants: {
         Row: {
           availability_status: string
@@ -1406,6 +1964,7 @@ export type Database = {
       products: {
         Row: {
           category: string | null
+          category_id: string | null
           created_at: string
           custom_overrides: Json
           default_revenue_share_rate: number | null
@@ -1429,6 +1988,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           created_at?: string
           custom_overrides?: Json
           default_revenue_share_rate?: number | null
@@ -1452,6 +2012,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           created_at?: string
           custom_overrides?: Json
           default_revenue_share_rate?: number | null
@@ -1474,6 +2035,13 @@ export type Database = {
           vendor_part_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_organization_id_fkey"
             columns: ["organization_id"]
@@ -1622,6 +2190,72 @@ export type Database = {
           },
         ]
       }
+      store_commerce_settings: {
+        Row: {
+          cart_drawer_settings: Json
+          cart_note: string | null
+          checkout_button_label: string
+          continue_shopping_label: string
+          created_at: string
+          currency: string
+          free_shipping_threshold_cents: number | null
+          header_settings: Json
+          organization_id: string
+          pdp_settings: Json
+          shop_settings: Json
+          show_shipping_progress: boolean
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          cart_drawer_settings?: Json
+          cart_note?: string | null
+          checkout_button_label?: string
+          continue_shopping_label?: string
+          created_at?: string
+          currency?: string
+          free_shipping_threshold_cents?: number | null
+          header_settings?: Json
+          organization_id: string
+          pdp_settings?: Json
+          shop_settings?: Json
+          show_shipping_progress?: boolean
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          cart_drawer_settings?: Json
+          cart_note?: string | null
+          checkout_button_label?: string
+          continue_shopping_label?: string
+          created_at?: string
+          currency?: string
+          free_shipping_threshold_cents?: number | null
+          header_settings?: Json
+          organization_id?: string
+          pdp_settings?: Json
+          shop_settings?: Json
+          show_shipping_progress?: boolean
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_commerce_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_commerce_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_layout_templates: {
         Row: {
           active: boolean
@@ -1663,6 +2297,70 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      store_navigation_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          item_type: string
+          label: string
+          organization_id: string
+          parent_id: string | null
+          position: number
+          store_id: string
+          target: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          item_type: string
+          label: string
+          organization_id: string
+          parent_id?: string | null
+          position?: number
+          store_id: string
+          target: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          item_type?: string
+          label?: string
+          organization_id?: string
+          parent_id?: string | null
+          position?: number
+          store_id?: string
+          target?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_navigation_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_navigation_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "store_navigation_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_navigation_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_page_sections: {
         Row: {
@@ -1847,12 +2545,21 @@ export type Database = {
         Row: {
           accent_color: string
           background_color: string
+          body_font_family: string
+          button_radius: number
+          card_radius: number
+          content_max_width: number
           created_at: string
+          design_blueprint_version: string
+          design_tokens: Json
+          heading_font_family: string
           hero_image_url: string | null
           id: string
+          image_aspect_ratio: string
           logo_url: string | null
           organization_id: string
           primary_color: string
+          product_grid_min_width: number
           secondary_color: string
           store_id: string
           text_color: string
@@ -1861,12 +2568,21 @@ export type Database = {
         Insert: {
           accent_color?: string
           background_color?: string
+          body_font_family?: string
+          button_radius?: number
+          card_radius?: number
+          content_max_width?: number
           created_at?: string
+          design_blueprint_version?: string
+          design_tokens?: Json
+          heading_font_family?: string
           hero_image_url?: string | null
           id?: string
+          image_aspect_ratio?: string
           logo_url?: string | null
           organization_id: string
           primary_color?: string
+          product_grid_min_width?: number
           secondary_color?: string
           store_id: string
           text_color?: string
@@ -1875,12 +2591,21 @@ export type Database = {
         Update: {
           accent_color?: string
           background_color?: string
+          body_font_family?: string
+          button_radius?: number
+          card_radius?: number
+          content_max_width?: number
           created_at?: string
+          design_blueprint_version?: string
+          design_tokens?: Json
+          heading_font_family?: string
           hero_image_url?: string | null
           id?: string
+          image_aspect_ratio?: string
           logo_url?: string | null
           organization_id?: string
           primary_color?: string
+          product_grid_min_width?: number
           secondary_color?: string
           store_id?: string
           text_color?: string
@@ -2075,6 +2800,17 @@ export type Database = {
         Args: { target_store_id: string; target_template_id: string }
         Returns: undefined
       }
+      create_admin_product_v2: {
+        Args: {
+          category_id_input?: string
+          price_cents?: number
+          product_description?: string
+          product_name: string
+          target_organization_id: string
+          target_store_id: string
+        }
+        Returns: Json
+      }
       create_test_order: {
         Args: {
           customer_email: string
@@ -2088,6 +2824,155 @@ export type Database = {
           order_id: string
           order_number: string
         }[]
+      }
+      finalize_checkout_intent_v1: {
+        Args: {
+          paid_amount_cents: number
+          paid_currency: string
+          provider_checkout_id_input: string
+          provider_input: string
+          provider_payment_id_input: string
+          target_checkout_intent_id: string
+        }
+        Returns: Json
+      }
+      get_admin_add_product_page_v1: {
+        Args: { target_organization_id?: string }
+        Returns: Json
+      }
+      get_admin_checkout_intents_v1: {
+        Args: {
+          result_limit?: number
+          result_offset?: number
+          status_filter?: string
+          target_organization_id?: string
+          target_store_id?: string
+        }
+        Returns: Json
+      }
+      get_admin_dashboard_v1: {
+        Args: { target_organization_id?: string }
+        Returns: Json
+      }
+      get_admin_media_library_v2: {
+        Args: {
+          media_type_filter?: string
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          target_organization_id: string
+        }
+        Returns: {
+          alt_text: string
+          bucket_name: string
+          created_at: string
+          file_name: string
+          is_public: boolean
+          media_asset_id: string
+          media_type: string
+          mime_type: string
+          organization_id: string
+          scope: string
+          storage_path: string
+          store_id: string
+          tags: string[]
+          title: string
+        }[]
+      }
+      get_admin_media_picker_page_v1: {
+        Args: {
+          media_type_filter?: string
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      get_admin_merchandising_setup_v2: {
+        Args: { target_organization_id?: string }
+        Returns: Json
+      }
+      get_admin_orders_v1: {
+        Args: {
+          fulfillment_status_filter?: string
+          payment_status_filter?: string
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          target_organization_id?: string
+          target_store_id?: string
+        }
+        Returns: Json
+      }
+      get_admin_organizations_v1: {
+        Args: { search_query?: string }
+        Returns: Json
+      }
+      get_admin_product_editor_v2: {
+        Args: { target_product_id: string }
+        Returns: Json
+      }
+      get_admin_product_library_filters_v2: {
+        Args: { target_organization_id?: string }
+        Returns: Json
+      }
+      get_admin_product_library_page_v1: {
+        Args: {
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          target_category_id?: string
+          target_organization_id?: string
+          target_status?: string
+          target_store_id?: string
+          view_mode?: string
+        }
+        Returns: Json
+      }
+      get_admin_product_library_v2: {
+        Args: {
+          category_filter?: string
+          organization_filter?: string
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          status_filter?: string
+          store_filter?: string
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          collections: Json
+          colors: Json
+          description: string
+          image_url: string
+          organization_id: string
+          organization_name: string
+          price_cents: number
+          product_id: string
+          product_name: string
+          sizes: Json
+          status: string
+          stores: Json
+        }[]
+      }
+      get_admin_shell_v1: { Args: never; Returns: Json }
+      get_admin_store_design_page_v1: {
+        Args: { target_store_id: string }
+        Returns: Json
+      }
+      get_admin_store_designer_v2: {
+        Args: { target_store_id: string }
+        Returns: Json
+      }
+      get_admin_stores_v1: {
+        Args: { search_query?: string; target_organization_id?: string }
+        Returns: Json
+      }
+      get_admin_taxonomy_page_v1: {
+        Args: { target_organization_id?: string }
+        Returns: Json
       }
       get_member_fulfillment_events: {
         Args: { target_order_id: string }
@@ -2131,6 +3016,27 @@ export type Database = {
           store_slug: string
         }[]
       }
+      get_product_library_filters: { Args: never; Returns: Json }
+      get_public_cart_quote_v2: {
+        Args: { cart_items: Json; target_store_slug: string }
+        Returns: Json
+      }
+      get_public_cart_quote_v3: {
+        Args: { cart_items: Json; target_store_slug: string }
+        Returns: Json
+      }
+      get_public_cart_quote_v4: {
+        Args: { cart_items: Json; target_store_slug: string }
+        Returns: Json
+      }
+      get_public_merchandising_page_v2: {
+        Args: {
+          page_kind: string
+          page_slug: string
+          target_store_slug: string
+        }
+        Returns: Json
+      }
       get_public_product: {
         Args: { product_slug: string; target_store_id: string }
         Returns: {
@@ -2140,6 +3046,14 @@ export type Database = {
           retail_price: number
           slug: string
         }[]
+      }
+      get_public_product_detail_v2: {
+        Args: { target_product_slug: string; target_store_slug: string }
+        Returns: Json
+      }
+      get_public_product_detail_v3: {
+        Args: { target_product_slug: string; target_store_slug: string }
+        Returns: Json
       }
       get_public_product_media: {
         Args: { target_product_id: string }
@@ -2152,6 +3066,33 @@ export type Database = {
           media_type: string
           storage_path: string
         }[]
+      }
+      get_public_product_selection_state_v1: {
+        Args: {
+          selected_color?: string
+          selected_size?: string
+          target_product_slug: string
+          target_store_slug: string
+        }
+        Returns: Json
+      }
+      get_public_product_selection_state_v2: {
+        Args: {
+          selected_color?: string
+          selected_size?: string
+          target_product_slug: string
+          target_store_slug: string
+        }
+        Returns: Json
+      }
+      get_public_product_selection_state_v3: {
+        Args: {
+          selected_color?: string
+          selected_size?: string
+          target_product_slug: string
+          target_store_slug: string
+        }
+        Returns: Json
       }
       get_public_product_variants: {
         Args: { target_product_id: string }
@@ -2237,6 +3178,73 @@ export type Database = {
           text_color: string
         }[]
       }
+      get_public_storefront_catalog_v2: {
+        Args: {
+          category_slug_filter?: string
+          collection_slug_filter?: string
+          color_filters?: string[]
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          size_filters?: string[]
+          target_store_slug: string
+        }
+        Returns: {
+          category_name: string
+          colors: Json
+          image_url: string
+          price_cents: number
+          product_id: string
+          product_name: string
+          product_slug: string
+          sizes: Json
+        }[]
+      }
+      get_public_storefront_catalog_v3: {
+        Args: {
+          availability_filter?: string
+          category_slug_filter?: string
+          collection_slug_filter?: string
+          color_filters?: string[]
+          max_price_cents?: number
+          min_price_cents?: number
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          size_filters?: string[]
+          sort_key?: string
+          target_store_slug: string
+        }
+        Returns: Json
+      }
+      get_public_storefront_filters_v2: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_home_render_v4: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_home_render_v5: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_home_v2: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_home_v3: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_interaction_contract_v1: {
+        Args: { target_store_slug: string }
+        Returns: Json
+      }
+      get_public_storefront_page_v2: {
+        Args: { target_page_slug: string; target_store_slug: string }
+        Returns: Json
+      }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
       is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
@@ -2249,6 +3257,17 @@ export type Database = {
           outstanding_payouts: number
         }[]
       }
+      prepare_public_checkout_v1: {
+        Args: {
+          cart_items: Json
+          customer_email_input: string
+          customer_name_input: string
+          idempotency_key_input: string
+          shipping_address_input: Json
+          target_store_slug: string
+        }
+        Returns: Json
+      }
       qc_database_report: {
         Args: never
         Returns: {
@@ -2256,6 +3275,60 @@ export type Database = {
           detail: string
           passed: boolean
         }[]
+      }
+      save_admin_collection_v2: {
+        Args: {
+          collection_description?: string
+          collection_id_input?: string
+          collection_name?: string
+          collection_type_input?: string
+          display_order_input?: number
+          image_url_input?: string
+          status_input?: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      save_admin_homepage_sections_v2: {
+        Args: { sections_data: Json; target_store_id: string }
+        Returns: Json
+      }
+      save_admin_product_media_v2: {
+        Args: { media_items: Json; target_product_id: string }
+        Returns: Json
+      }
+      save_admin_product_merchandising_v2: {
+        Args: {
+          collection_ids?: string[]
+          colors?: Json
+          inventory?: Json
+          product_data: Json
+          sizes?: Json
+          store_ids?: string[]
+          target_product_id: string
+        }
+        Returns: Json
+      }
+      save_admin_store_theme_v2: {
+        Args: {
+          commerce_data?: Json
+          target_store_id: string
+          theme_data: Json
+        }
+        Returns: Json
+      }
+      save_product_category_v2: {
+        Args: {
+          active_input?: boolean
+          category_description?: string
+          category_id_input?: string
+          category_name?: string
+          default_colors_input?: string[]
+          default_sizes_input?: string[]
+          uses_color_input?: boolean
+          uses_size_input?: boolean
+        }
+        Returns: Json
       }
       save_product_size_color_options: {
         Args: {
@@ -2265,6 +3338,33 @@ export type Database = {
           target_product_id: string
         }
         Returns: undefined
+      }
+      search_product_library: {
+        Args: {
+          category_filter?: string
+          category_name_filter?: string
+          include_drafts?: boolean
+          organization_filter?: string
+          result_limit?: number
+          result_offset?: number
+          search_query?: string
+          store_filter?: string
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          description: string
+          image_url: string
+          organization_id: string
+          organization_name: string
+          price_cents: number
+          product_id: string
+          product_name: string
+          sku: string
+          status: string
+          store_id: string
+          store_name: string
+        }[]
       }
       storage_object_org_id: { Args: { object_name: string }; Returns: string }
       store_is_publicly_available: {

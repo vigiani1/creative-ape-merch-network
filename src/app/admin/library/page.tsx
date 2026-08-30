@@ -56,7 +56,7 @@ export default async function AdminProductLibraryPage({ searchParams }: { search
       <div>
         <p className="text-sm font-semibold text-black/45">Master catalog</p>
         <h1 className="mt-1 text-3xl font-black">Product library</h1>
-        <p className="mt-2 max-w-4xl text-sm text-black/55">Search across organization products by name, category, SKU, vendor part number, description, and variant-specific data such as size, color, variant SKU, packaging class, and availability.</p>
+        <p className="mt-2 max-w-4xl text-sm text-black/55">Search across organization products by name, category, SKU, vendor part number, description, and variant-specific data such as size, color, variant SKU, packaging class, and availability. New and updated products are indexed automatically.</p>
       </div>
 
       <form method="get" className="grid gap-3 rounded-2xl border border-black/10 bg-white p-5 md:grid-cols-[1.5fr_1fr_1fr_auto]">

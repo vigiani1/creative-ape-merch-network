@@ -7,6 +7,7 @@ export default async function ProductOnboardingPage() {
   const [
     { data: vendors, error: vendorError },
     { data: categories, error: categoryError },
+    { data: fields, error: fieldError },
     { data: templates, error: templateError },
     { data: variants, error: variantError },
     { data: stores, error: storeError },
@@ -18,8 +19,13 @@ export default async function ProductOnboardingPage() {
       .eq("active", true)
       .order("name"),
     supabase
+      .from("product_category_fields")
+      .select("id,category_id,field_key,label,field_type,field_group,required,admin_only,hidden,display_order,options,placeholder,help_text")
+      .order("field_group")
+      .order("display_order"),
+    supabase
       .from("product_templates")
-      .select("id,name,vendor_id,vendor_part_number,category_id,category,description,sku_prefix,finished_sale_price")
+      .select("id,name,vendor_id,vendor_part_number,category_id,category,description,sku_prefix,finished_sale_price,custom_data")
       .eq("active", true)
       .order("name"),
     supabase
@@ -33,7 +39,7 @@ export default async function ProductOnboardingPage() {
       .order("name"),
   ]);
 
-  if (vendorError || categoryError || templateError || variantError || storeError) {
+  if (vendorError || categoryError || fieldError || templateError || variantError || storeError) {
     throw new Error("Unable to load product onboarding.");
   }
 
@@ -77,6 +83,7 @@ export default async function ProductOnboardingPage() {
           default_sizes: category.default_sizes ?? [],
           default_colors: category.default_colors ?? [],
         }))}
+        fields={fields ?? []}
         templates={(templates ?? []).map((template) => ({
           ...template,
           variants: variantsByTemplate.get(template.id) ?? [],

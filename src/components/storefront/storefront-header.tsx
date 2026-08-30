@@ -10,6 +10,12 @@ type NavItem = {
   target: string;
 };
 
+function storefrontHref(storeSlug: string, target: string) {
+  if (!target.startsWith("/")) return target;
+  if (target === "/" || target === "/shop") return `/shop/${storeSlug}/catalog`;
+  return `/shop/${storeSlug}${target}`;
+}
+
 export function StorefrontHeader({
   storeSlug,
   storeName,
@@ -49,14 +55,14 @@ export function StorefrontHeader({
 
           <nav className="store-header__nav" aria-label="Primary">
             {navigation.map((item) => (
-              <Link key={item.id ?? item.target} href={item.target.startsWith("/") ? `/shop/${storeSlug}${item.target === "/" ? "" : item.target}` : item.target}>
+              <Link key={item.id ?? item.target} href={storefrontHref(storeSlug, item.target)}>
                 {item.label}
               </Link>
             ))}
           </nav>
 
           <div className="store-header__actions">
-            <Link href={`/shop/${storeSlug}/search`} aria-label="Search" className="store-header__action">
+            <Link href={`/shop/${storeSlug}/catalog?focus=search`} className="store-header__action">
               Search
             </Link>
             <Link href="/cart" aria-label={`Cart with ${itemCount} items`} className="store-header__action">
@@ -78,7 +84,7 @@ export function StorefrontHeader({
             {navigation.map((item) => (
               <Link
                 key={item.id ?? item.target}
-                href={item.target.startsWith("/") ? `/shop/${storeSlug}${item.target === "/" ? "" : item.target}` : item.target}
+                href={storefrontHref(storeSlug, item.target)}
                 onClick={() => setOpen(false)}
               >
                 {item.label}
@@ -86,7 +92,7 @@ export function StorefrontHeader({
             ))}
           </nav>
           <div className="store-mobile-nav__footer">
-            <Link href={`/shop/${storeSlug}/search`} onClick={() => setOpen(false)}>Search</Link>
+            <Link href={`/shop/${storeSlug}/catalog?focus=search`} onClick={() => setOpen(false)}>Search</Link>
             <Link href="/cart" onClick={() => setOpen(false)}>Cart{itemCount ? ` (${itemCount})` : ""}</Link>
           </div>
         </div>

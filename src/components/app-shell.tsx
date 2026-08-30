@@ -14,7 +14,8 @@ const SESSION_KEY="creative-ape-admin-store";
 function routeUsesStore(pathname:string){
   return pathname.startsWith("/admin/page-editor")
     || pathname.startsWith("/admin/store-design")
-    || pathname.startsWith("/admin/products");
+    || pathname.startsWith("/admin/products")
+    || pathname.startsWith("/admin/media");
 }
 
 export function AppShell({

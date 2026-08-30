@@ -10,6 +10,7 @@ const nav = [
   { href: "/admin/media", label: "Media" },
   { href: "/admin/organizations", label: "Organizations" },
   { href: "/admin/stores", label: "Stores" },
+  { href: "/admin/page-editor", label: "Page Editor" },
   { href: "/admin/store-design", label: "Store Design" },
   { href: "/admin/settings", label: "Settings" },
 ];

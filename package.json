@@ -10,7 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "quality": "node scripts/quality-gate.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "validate": "npm run quality && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.5",

@@ -29,9 +29,9 @@ export default async function TemplatesPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-sm font-semibold text-black/45">Reusable catalog</p>
-        <h1 className="mt-1 text-3xl font-black">Product templates</h1>
-        <p className="mt-2 max-w-4xl text-sm text-black/55">Templates hold reusable product, vendor, cost, and shipping metadata. Shipping fields stay admin-only and are copied into storefront products when cloned.</p>
+        <p className="text-sm font-semibold text-black/45">Advanced master catalog editor</p>
+        <h1 className="mt-1 text-3xl font-black">Master products</h1>
+        <p className="mt-2 max-w-4xl text-sm text-black/55">Use Product Onboarding for the guided vendor + part number workflow. This page is the advanced editor for saved master products, costs, shipping metadata, and exact variants.</p>
       </div>
 
       <section className="rounded-2xl border border-black/10 bg-white p-6">

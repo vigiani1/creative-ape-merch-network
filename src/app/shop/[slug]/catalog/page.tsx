@@ -1,5 +1,6 @@
 import { ProductCard, type StorefrontProductCardData } from "@/components/storefront/product-card";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
+import { MobileFilterSheet } from "@/components/storefront/mobile-filter-sheet";
 import { SetupRequired } from "@/components/setup-required";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -116,6 +117,14 @@ export default async function CatalogPage({
       </section>
 
       <section className="catalog-controls" aria-label="Product filters">
+        <MobileFilterSheet
+          storeSlug={home.store.slug}
+          categories={filters?.categories ?? []}
+          category={category}
+          search={search}
+          sort={sort}
+          inStock={Boolean(availability)}
+        />
         <form className="catalog-controls__search" action={`/shop/${home.store.slug}/catalog`}>
           {category ? <input type="hidden" name="category" value={category} /> : null}
           {sort !== "featured" ? <input type="hidden" name="sort" value={sort} /> : null}
@@ -175,6 +184,35 @@ export default async function CatalogPage({
           <button type="submit">Apply</button>
         </form>
       </section>
+
+      {(category || search || availability) ? (
+        <div className="catalog-applied">
+          <span>Applied:</span>
+          {category ? (
+            <a href={`/shop/${home.store.slug}/catalog`} className="catalog-chip">
+              {filters?.categories?.find((item) => item.slug === category)?.name ?? category} ×
+            </a>
+          ) : null}
+          {search ? (
+            <a href={`/shop/${home.store.slug}/catalog${category ? `?category=${encodeURIComponent(category)}` : ""}`} className="catalog-chip">
+              “{search}” ×
+            </a>
+          ) : null}
+          {availability ? (
+            <a
+              href={`/shop/${home.store.slug}/catalog?${new URLSearchParams({
+                ...(category ? { category } : {}),
+                ...(search ? { q: search } : {}),
+                ...(sort !== "featured" ? { sort } : {}),
+              }).toString()}`}
+              className="catalog-chip"
+            >
+              In stock ×
+            </a>
+          ) : null}
+          <a href={`/shop/${home.store.slug}/catalog`} className="catalog-clear-all">Clear all</a>
+        </div>
+      ) : null}
 
       <section className="catalog-results">
         {products.length ? (

@@ -196,6 +196,75 @@ export type Database = {
           },
         ]
       }
+      media_assets: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          created_by: string | null
+          file_name: string
+          id: string
+          is_public: boolean
+          media_type: string
+          mime_type: string | null
+          organization_id: string | null
+          scope: string
+          storage_path: string
+          store_id: string | null
+          tags: string[]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          id?: string
+          is_public?: boolean
+          media_type: string
+          mime_type?: string | null
+          organization_id?: string | null
+          scope?: string
+          storage_path: string
+          store_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          id?: string
+          is_public?: boolean
+          media_type?: string
+          mime_type?: string | null
+          organization_id?: string | null
+          scope?: string
+          storage_path?: string
+          store_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_assets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1381,6 +1450,169 @@ export type Database = {
           },
         ]
       }
+      store_layout_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          layout_json: Json
+          name: string
+          preview_image_url: string | null
+          slug: string
+          theme_json: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          layout_json?: Json
+          name: string
+          preview_image_url?: string | null
+          slug: string
+          theme_json?: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          layout_json?: Json
+          name?: string
+          preview_image_url?: string | null
+          slug?: string
+          theme_json?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_page_sections: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          organization_id: string
+          page_id: string
+          position: number
+          section_type: string
+          settings: Json
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          organization_id: string
+          page_id: string
+          position?: number
+          section_type: string
+          settings?: Json
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          organization_id?: string
+          page_id?: string
+          position?: number
+          section_type?: string
+          settings?: Json
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_page_sections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_page_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "store_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_page_sections_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_pages: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          nav_label: string | null
+          organization_id: string
+          page_type: string
+          position: number
+          show_in_navigation: boolean
+          slug: string
+          store_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          nav_label?: string | null
+          organization_id: string
+          page_type?: string
+          position?: number
+          show_in_navigation?: boolean
+          slug: string
+          store_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          nav_label?: string | null
+          organization_id?: string
+          page_type?: string
+          position?: number
+          show_in_navigation?: boolean
+          slug?: string
+          store_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_pages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_pages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_sections: {
         Row: {
           created_at: string
@@ -1513,6 +1745,7 @@ export type Database = {
           description: string | null
           ends_at: string | null
           id: string
+          layout_template_id: string | null
           name: string
           organization_id: string
           published_at: string | null
@@ -1529,6 +1762,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           id?: string
+          layout_template_id?: string | null
           name: string
           organization_id: string
           published_at?: string | null
@@ -1545,6 +1779,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           id?: string
+          layout_template_id?: string | null
           name?: string
           organization_id?: string
           published_at?: string | null
@@ -1556,6 +1791,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "stores_layout_template_id_fkey"
+            columns: ["layout_template_id"]
+            isOneToOne: false
+            referencedRelation: "store_layout_templates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stores_organization_id_fkey"
             columns: ["organization_id"]
@@ -1739,6 +1981,35 @@ export type Database = {
           description: string
           id: string
           name: string
+          slug: string
+          title: string
+        }[]
+      }
+      get_public_store_page: {
+        Args: { page_slug: string; target_store_id: string }
+        Returns: {
+          id: string
+          page_type: string
+          slug: string
+          title: string
+        }[]
+      }
+      get_public_store_page_sections: {
+        Args: { target_page_id: string }
+        Returns: {
+          id: string
+          section_position: number
+          section_type: string
+          settings: Json
+        }[]
+      }
+      get_public_store_pages: {
+        Args: { target_store_id: string }
+        Returns: {
+          id: string
+          nav_label: string
+          page_position: number
+          page_type: string
           slug: string
           title: string
         }[]

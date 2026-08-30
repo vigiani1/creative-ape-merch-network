@@ -22,4 +22,6 @@ export type PublicVariant = {
   sku: string | null;
   price_override: number | null;
   availability_status: "available";
+  color_image_url: string | null;
+  in_stock: boolean;
 };
